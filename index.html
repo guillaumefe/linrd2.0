@@ -1251,7 +1251,10 @@ function generateTasks(editorContent) {
     return [];
   }
 
-  return tasks.map(task => {
+  // Filtrer les tâches avec le statut "delay"
+  const delayTasks = tasks.filter(task => task.status === '*-');
+
+  return delayTasks.map(task => {
     task.description = task.description.trimEnd();
 
     if (task.description.includes("(ctime=")) {
