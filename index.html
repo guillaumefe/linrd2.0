@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,7 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.14.0/js-yaml.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="styles.css" />
-   
+    
     <style>
       body,
       html {
@@ -274,8 +276,8 @@ input.disabled {
 @media (max-width: 768px) {
   #editor {
     display: none;
-      flex: 1;
-      min-width:100%;
+    flex: 1;
+    min-width:100%;
   }
 }
 
@@ -316,7 +318,7 @@ input.disabled {
             >
               Configuration
             </a>
-           
+            
 <!--div class="dropdown-menu" aria-labelledby="navbarDropdown">
   <button
     class="dropdown-item"
@@ -450,7 +452,7 @@ input.disabled {
               </div>
             </div>
         </ul>
-       
+        
         <!-- Contenu des onglets -->
         <div id="catalog" class="tab-content">
           <div
@@ -460,17 +462,20 @@ input.disabled {
             aria-labelledby="inbox-tab"
           >
             <h3>Inbox</h3>
+            <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project 
+              <i class="fas fa-plus"></i>
+            </button>
             <div id="empty-inbox-message" class="empty-inbox-message" style="display: none;">
               <span role="img" aria-label="sun" class="sun" style="font-size: 50px;">☀️</span>
               <h2>Tout va bien ! Il n'y a rien à faire pour le moment.</h2>
               <p>Vous pouvez créer de nouvelles choses <br/>en utilisant le bouton "New Project".</p>
-           
-            <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project
-              <i class="fas fa-plus"></i>
-            </button>
-                  </div>
+            
+              <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project 
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
             <div id="inbox-tasks"></div>
-              <button id="loadMoreInbox" class="loadMore btn btn-sm" style="display:none;">More</button>
+            <button id="loadMoreInbox" class="loadMore btn btn-sm" style="display:none;">More</button>
             </div>
             <div
               class="tab-pane fade"
@@ -481,7 +486,7 @@ input.disabled {
               <h3>Done</h3>
               <div id="done-tasks"></div>
               <button id="loadMoreDone" class="loadMore btn btn-sm" style="display:none;">More</button>
-             
+              
             </div>
 
           <div
@@ -565,21 +570,33 @@ allTasks = [];
     switch (task.status) {
       case '--':
         taskWithTab.tab = 'done';
+        doneTasks.push(task);
+        doneTotalTasks++; 
         break;
       case '+-':
         taskWithTab.tab = 'doc';
+        docTasks.push(task);
+        docTotalTasks++; 
         break;
       case '&-':
         taskWithTab.tab = 'await';
+        awaitTasks.push(task);
+        awaitTotalTasks++; 
         break;
       case 'x-':
         taskWithTab.tab = 'cancel';
+        cancelTasks.push(task);
+        cancelTotalTasks++; 
         break;
       case '*-':
         taskWithTab.tab = 'delay';
+        delayTasks.push(task);
+        delayTotalTasks++; 
         break;
       default:
         taskWithTab.tab = 'inbox';
+        inboxTasks.push(task);
+        inboxTotalTasks++; 
         break;
     }
     allTasks.push(taskWithTab);
@@ -606,7 +623,7 @@ function updateDelayTasksStatus() {
   let tasksUpdated = false;
   const editor = ace.edit("editor");
   const session = editor.getSession();
- 
+  
   for (let i = 0; i < allTasks.length; i++) {
     const task = allTasks[i];
 
@@ -614,17 +631,17 @@ function updateDelayTasksStatus() {
       const taskDescription = task.description;
       const taskRegExp = new RegExp(`^\\s*${taskDescription.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[-+&x*]?`, 'm');
       const match = session.getValue().match(taskRegExp);
-     
+      
       if (match) {
         const lineNumber = session.getValue().substring(0, match.index).split('\n').length - 1;
         const lineContent = session.getLine(lineNumber);
         const updatedLine = lineContent.replace(/[-+&x*]{1,2}/g, '');
-       
+        
         // Update the task status in allTasks
         allTasks[i].status = null;
         allTasks[i].tab = 'inbox';
         tasksUpdated = true;
-       
+        
         // Update the line in the editor
         session.replace({ start: { row: lineNumber, column: 0 }, end: { row: lineNumber, column: lineContent.length } }, updatedLine);
       }
@@ -638,11 +655,11 @@ function updateDelayTasksStatus() {
       updateTab(columnId, columnTasks.slice(0, maxTasksPerColumn));
       updateLoadMoreButtonVisibility(columnId);
     });
-   
-      // Save the updated data
+    
+    // Save the updated data
     saveData(allTasks);
   }
- 
+  
 }
 
 // Appeler la fonction updateDelayTasksStatus toutes les 60 secondes (60000 ms)
@@ -655,22 +672,22 @@ function updateTaskStatus(task, newStatusSymbol) {
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex];
   const currentStatusSymbol = getStatusSymbol(taskLine);
- 
+  
   // Supprimer tous les symboles de statut existants dans la description
   taskLine = taskLine.replace(/(-|\+|&|x|\*)-$/g, '').trimEnd();
   lines[taskLineIndex] = taskLine.replace(taskLine, `${taskLine} ${newStatusSymbol}`);
   mainEditor.session.doc.setValue(lines.join("\n"));
- 
+  
 }
 
 function updateTaskDelay(task, delayTimestamp) {
   const lines = mainEditor.session.doc.getAllLines();
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex];
- 
+  
   // Supprimer le délai existant, s'il en existe un
   taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
- 
+  
   // Ajouter le nouveau délai
   lines[taskLineIndex] = `${taskLine} (delay=${parseInt(delayTimestamp)})`;
   mainEditor.session.doc.setValue(lines.join("\n"));
@@ -680,10 +697,10 @@ function updateTaskAwait(task, awaitTimestamp) {
   const lines = mainEditor.session.doc.getAllLines();
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex];
- 
+  
   // Supprimer le délai existant, s'il en existe un
   taskLine = taskLine.replace(/await:(\s*\d+)?/g, '').trimEnd();
- 
+  
   // Ajouter le nouveau délai
   lines[taskLineIndex] = `${taskLine} (`+"await"+`=${parseInt(awaitTimestamp)})`;
   mainEditor.session.doc.setValue(lines.join("\n"));
@@ -705,9 +722,9 @@ function handleAwaitConfirmButtonClick(task) {
   const dateInput = document.getElementById("dateInput");
   const durationInput = document.getElementById("durationInput");
   const inputValue = dateInput.value || durationInput.value;
- 
+  
   const awaitTimestamp = calculateTargetTimestamp(inputValue);
- 
+  
   updateTaskAwait(task, awaitTimestamp); // Ajoutez cette ligne
   updateTaskStatus(task, '&-');
   closePopup();
@@ -718,7 +735,7 @@ function handleDelayConfirmButtonClick(task) {
   const inputValue = dateInput.value || durationInput.value;
 
   const delayTimestamp = calculateTargetTimestamp(inputValue);
- 
+  
   updateTaskDelay(task, delayTimestamp); // Ajoutez cette ligne
   updateTaskStatus(task, '*-');
   closePopup();
@@ -900,7 +917,7 @@ function openPopup(title, task) {
   delayButton.id = "delayButton"
   delayButton.dataset.task_id = task.id
   delayButton.disabled = true; // Désactive le bouton par défaut
- 
+  
   const inputContainer = document.createElement("div");
   inputContainer.classList.add("input-container");
 
@@ -1088,7 +1105,7 @@ function parseYaml(yaml) {
 
   lines.forEach((line, index) => {
     if (line.trim() === '') {
-        taskId++;
+      taskId++;
       return;
     }
 
@@ -1155,13 +1172,13 @@ function parseYaml(yaml) {
     let descriptions = tasks.map((task) => task.description).join("\n");
     return descriptions;
   }
- 
+  
   function saveData(data) {
     localStorage.setItem('editor', JSON.stringify(data));
   }
 </script>
 <script>
-let maxTasksPerColumn = 20;
+let maxTasksPerColumn = 10;
 let inboxTotalTasks = 0;
 let doneTotalTasks = 0;
 let docTotalTasks = 0;
@@ -1214,7 +1231,7 @@ function updateLoadMoreButtonVisibility(columnId) {
     default:
       return;
   }
-
+  loadedTasks = (loadedTasks > 0) ? loadedTasks : maxTasksPerColumn;
   const remainingTasks = totalTasks - loadedTasks;
   const loadMoreButton = document.getElementById('loadMore' + columnId.charAt(0).toUpperCase() + columnId.slice(1));
 
@@ -1233,48 +1250,44 @@ function loadMoreTasks(columnId) {
     case 'inbox':
       totalTasks = inboxTotalTasks;
       loadedTasks = inboxLoadedTasks;
-      inboxLoadedTasks += Math.min(20, totalTasks - loadedTasks);
-      updateTab(columnId, inboxTasks.slice(0, inboxLoadedTasks));    
+      inboxLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, inboxTasks.slice(0, inboxLoadedTasks));     
       break;
+
     case 'done':
       totalTasks = doneTotalTasks;
       loadedTasks = doneLoadedTasks;
-      doneLoadedTasks += Math.min(20, totalTasks - loadedTasks);
+      doneLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
       updateTab(columnId, doneTasks.slice(0, doneLoadedTasks));
       break;
     case 'doc':
       totalTasks = docTotalTasks;
       loadedTasks = docLoadedTasks;
-      docLoadedTasks += Math.min(20, totalTasks - loadedTasks);
+      docLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
       updateTab(columnId, docTasks.slice(0, docLoadedTasks));
       break;
     case 'await':
       totalTasks = awaitTotalTasks;
       loadedTasks = awaitLoadedTasks;
-      awaitLoadedTasks += Math.min(20, totalTasks - loadedTasks);
+      awaitLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
       updateTab(columnId, awaitTasks.slice(0, awaitLoadedTasks));
       break;
     case 'delay':
       totalTasks = delayTotalTasks;
       loadedTasks = delayLoadedTasks;
-      delayLoadedTasks += Math.min(20, totalTasks - loadedTasks);
+      delayLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
       updateTab(columnId, delayTasks.slice(0, delayLoadedTasks));
       break;
     case 'cancel':
       totalTasks = cancelTotalTasks;
       loadedTasks = cancelLoadedTasks;
-      cancelLoadedTasks += Math.min(20, totalTasks - loadedTasks);
+      cancelLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
       updateTab(columnId, cancelTasks.slice(0, cancelLoadedTasks));
       break;
     default:
       return;
   }
 
-  // Vérifier si toutes les tâches ont été chargées
-  const remainingTasks = totalTasks - loadedTasks;
-  if (remainingTasks > maxTasksPerColumn) {
-    document.getElementById('loadMore' + columnId.charAt(0).toUpperCase() + columnId.slice(1)).style.display = 'none';
-  }
   updateLoadMoreButtonVisibility(columnId);
 }
 
@@ -1421,7 +1434,7 @@ mainEditor.session.on("change", updateEditor);
 <script>
   const initialData = loadData();
   mainEditor.session.insert({ row: 0, column: 0 }, initialData);
- 
+  
   let popupEditor;
 
   function initPopupEditor() {
@@ -1458,28 +1471,28 @@ function createTaskElement(task) {
   const taskClass = task.is_project ? "project" : "simple-task";
   const taskElement = createDivWithClass('task');
   taskElement.classList.add(taskClass);
- 
+  
   if (!popupEditor) {
     initPopupEditor();
   } else {
     popupEditor.resize();
   }
- 
+  
 
   taskElement.appendChild(createButton('Cancel', 'red', () => handleCancelButtonClick(task)));
   taskElement.appendChild(createButton('Done', 'green', () => handleDoneButtonClick(task)));
   taskElement.appendChild(createButton('Await', 'blue', () => handleAwaitButtonClick(task)));
   taskElement.appendChild(createButton('Delay', 'yellow', () => handleDelayButtonClick(task)));
   taskElement.appendChild(createButton('Doc', 'dark-blue', () => handleDocButtonClick(task)));
- 
+  
   const taskTextElement = createTaskTextElement(task);  
   taskTextElement.className = 'task-text-action';
- 
+  
   const prefix = (debugMode) ? "[" + task.id + "] " : "";
   taskTextElement.textContent = (task.clean_context) ? prefix + task.clean_context + " > " + task.clean_description : prefix + task.clean_description;
   taskTextElement.onclick = () => highlightTaskLine(task);
   taskElement.appendChild(taskTextElement);
- 
+  
   return taskElement;
 }
 
@@ -1513,15 +1526,6 @@ function createTaskTextElement(task) {
   let container = createDivWithClass("action");
   container.appendChild(context);
   container.appendChild(action);
-
-  // Ajoute les informations de débogage si le mode debug est activé
-  //if (debugMode) {
-  //  const debugInfo = document.createElement("pre");
-  //  debugInfo.textContent = JSON.stringify(task, null, 2);
-  //  debugInfo.style.fontSize = "0.8em";
-  //  debugInfo.style.color = "grey";
-  //  container.appendChild(debugInfo);
-  //}
 
   return container;
 }
@@ -1558,7 +1562,7 @@ function createBoldGreyParagraphWithText(text) {
 
 </script>
 <script>
-  function updateTab(tabId, tasks) {
+  function updateTab(tabId, tasks) {console.log('updateTab', tabId, tasks)
     const tab = document.getElementById(tabId);
     if (!tab) {
       console.error('Tab not found:', tabId);
@@ -1625,10 +1629,10 @@ function addAndRemoveLine() {
   const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'élément contenant votre éditeur Ace
   const session = mainEditor.getSession();
   const linesCount = session.getLength();
- 
+  
   // Ajouter une nouvelle ligne à la fin
   session.insert({ row: linesCount, column: 0 }, '\n');
- 
+  
   // Supprimer la nouvelle ligne après un certain temps
   setTimeout(() => {
     const newLinesCount = session.getLength();
@@ -1664,7 +1668,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   //function toggleDebugMode() {
   //  debugMode = !debugMode;
-        
+      
   //  const debugToggleButton = document.getElementById('debugToggleButton');
   //  if (debugMode) {
   //    debugToggleButton.textContent = "Désactiver le mode debug";
