@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -13,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.14.0/js-yaml.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="styles.css" />
-    
+   
     <style>
       body,
       html {
@@ -49,10 +48,10 @@
         margin: 1% auto;
         padding: 20px;
         border: 1px solid #888;
-        width: 80%;
+        width: 90%;
       }
       #popup-editor {
-        min-height: 300px; /* ou une autre valeur qui convient */
+        min-height: 420px; /* ou une autre valeur qui convient */
       }
       .task {
           background-color: #f8f9fa;
@@ -272,6 +271,13 @@ input.disabled {
   margin-top: 10px;
   margin-bottom: 20px;
 }
+@media (max-width: 768px) {
+  #editor {
+    display: none;
+      flex: 1;
+      min-width:100%;
+  }
+}
 
     </style>
   </head>
@@ -282,17 +288,20 @@ input.disabled {
   </div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">Linrd.ml</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+
+<button
+  class="navbar-toggler"
+  id="navbarToggler"
+  type="button"
+  data-toggle="collapse"
+  data-target="#navbarNav"
+  aria-controls="navbarNav"
+  aria-expanded="false"
+  aria-label="Toggle navigation"
+>
+  <span class="navbar-toggler-icon"></span>
+</button>
+
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item dropdown">
@@ -307,15 +316,9 @@ input.disabled {
             >
               Configuration
             </a>
-            
-<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+           
+<!--div class="dropdown-menu" aria-labelledby="navbarDropdown">
   <button
-    class="dropdown-item"
-    onclick="toggleTheme()"
-  >
-    Switch light/dark terminal
-  </button>
-  <!--button
     class="dropdown-item"
     id="debugToggleButton"
     onclick="toggleDebugMode()!broken"
@@ -328,8 +331,26 @@ input.disabled {
     onclick="toggleProjects()"
   >
     Basculer entre tâches et projets
-  </button-->
+  </button>
+</div-->
+
+<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+  <button
+    class="dropdown-item"
+    id="toggleEditorButton"
+  >
+    Afficher/cacher l'éditeur
+  </button>
+  <button
+    class="dropdown-item"
+    onclick="toggleTheme()"
+  >
+    Switch light/dark terminal
+  </button>
+  <!-- Ajoutez le nouveau bouton ici -->
 </div>
+
+
 
 
           </li>
@@ -342,7 +363,7 @@ input.disabled {
       </div>
     </nav>
     <div class="wrapper">
-      <div id="editor"></div>
+      <div id="editor"  class="sidebar"></div>
       <div id="viewer" class="tab-content">
       <!-- Champ de recherche -->
 <div class="search-container">
@@ -429,7 +450,7 @@ input.disabled {
               </div>
             </div>
         </ul>
-        
+       
         <!-- Contenu des onglets -->
         <div id="catalog" class="tab-content">
           <div
@@ -438,23 +459,16 @@ input.disabled {
             role="tabpanel"
             aria-labelledby="inbox-tab"
           >
-            <h3 style="float:left">Inbox</h3>
+            <h3>Inbox</h3>
             <div id="empty-inbox-message" class="empty-inbox-message" style="display: none;">
               <span role="img" aria-label="sun" class="sun" style="font-size: 50px;">☀️</span>
-			  <i>You made the sun!</i>
               <h2>Tout va bien ! Il n'y a rien à faire pour le moment.</h2>
-              <p>Vous pouvez toujours créer une nouvelle tâche en utilisant le bouton "Nouvelle tâche" en bas à droite.</p>
-              <p>Voici comment utiliser Linrd :</p>
-              <ul>
-                <li>Créez des tâches et des projets en utilisant les boutons situés en bas à droite.</li>
-                <li>Organisez les tâches dans différentes colonnes en fonction de leur statut.</li>
-                <li>Utilisez la fonction de recherche pour filtrer les tâches par mots-clés.</li>
-                <li>Accédez aux paramètres pour personnaliser l'application selon vos préférences.</li>
-              </ul>
-            </div>
-            <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project 
+              <p>Vous pouvez créer de nouvelles choses <br/>en utilisant le bouton "New Project".</p>
+           
+            <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project
               <i class="fas fa-plus"></i>
             </button>
+                  </div>
             <div id="inbox-tasks"></div>
               <button id="loadMoreInbox" class="loadMore btn btn-sm" style="display:none;">More</button>
             </div>
@@ -467,7 +481,7 @@ input.disabled {
               <h3>Done</h3>
               <div id="done-tasks"></div>
               <button id="loadMoreDone" class="loadMore btn btn-sm" style="display:none;">More</button>
-              
+             
             </div>
 
           <div
@@ -514,6 +528,20 @@ input.disabled {
       </div>
     </div>
 <script>
+  function toggleEditor() {
+    var editor = document.getElementById('editor');
+    if (editor.style.display === 'none') {
+      editor.style.display = 'block';
+    } else {
+      editor.style.display = 'none';
+    }
+  }
+
+  // Attachez la fonction à l'écouteur d'événements du bouton
+  document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
+
+</script>
+<script>
 let debugMode = false;
 
   function addTaskToTop(editor_source, editor_destination, yaml) {
@@ -528,9 +556,9 @@ let debugMode = false;
   }
 
 
-const allTasks = [];
+let allTasks = [];
 function updateViewer(tasks) {
-  const _allTasks = [];
+allTasks = [];
   tasks.forEach((task, index) => {
     let taskWithTab = { ...task, originalIndex: index }; // Add the original index to each task
 
@@ -554,22 +582,21 @@ function updateViewer(tasks) {
         taskWithTab.tab = 'inbox';
         break;
     }
-
-    _allTasks.push(taskWithTab);
+    allTasks.push(taskWithTab);
   });
 
-  // Sort _allTasks by the original index
-  _allTasks.sort((a, b) => a.originalIndex - b.originalIndex);
+  // Sort allTasks by the original index
+  allTasks.sort((a, b) => a.originalIndex - b.originalIndex);
 
   // Update tabs with tasks
   ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
-    let columnTasks = _allTasks.filter(task => task.tab === columnId);
+    let columnTasks = allTasks.filter(task => task.tab === columnId);
     updateTab(columnId, columnTasks.slice(0, maxTasksPerColumn));
     updateLoadMoreButtonVisibility(columnId);
   });
 
   // Save the updated data
-  saveData(_allTasks);
+  saveData(allTasks);
 }
 
 function updateDelayTasksStatus() {
@@ -579,25 +606,25 @@ function updateDelayTasksStatus() {
   let tasksUpdated = false;
   const editor = ace.edit("editor");
   const session = editor.getSession();
-  
+ 
   for (let i = 0; i < allTasks.length; i++) {
     const task = allTasks[i];
 
-    if (task.tab === 'delay' && task.delay && task.delay <= tommorrow) {
+    if (task.tab === 'delay' && task.delay && task.delay <= now) {
       const taskDescription = task.description;
       const taskRegExp = new RegExp(`^\\s*${taskDescription.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[-+&x*]?`, 'm');
       const match = session.getValue().match(taskRegExp);
-      
+     
       if (match) {
         const lineNumber = session.getValue().substring(0, match.index).split('\n').length - 1;
         const lineContent = session.getLine(lineNumber);
         const updatedLine = lineContent.replace(/[-+&x*]{1,2}/g, '');
-        
+       
         // Update the task status in allTasks
         allTasks[i].status = null;
         allTasks[i].tab = 'inbox';
         tasksUpdated = true;
-        
+       
         // Update the line in the editor
         session.replace({ start: { row: lineNumber, column: 0 }, end: { row: lineNumber, column: lineContent.length } }, updatedLine);
       }
@@ -611,11 +638,11 @@ function updateDelayTasksStatus() {
       updateTab(columnId, columnTasks.slice(0, maxTasksPerColumn));
       updateLoadMoreButtonVisibility(columnId);
     });
-    
-	// Save the updated data
+   
+      // Save the updated data
     saveData(allTasks);
   }
-  
+ 
 }
 
 // Appeler la fonction updateDelayTasksStatus toutes les 60 secondes (60000 ms)
@@ -628,24 +655,37 @@ function updateTaskStatus(task, newStatusSymbol) {
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex];
   const currentStatusSymbol = getStatusSymbol(taskLine);
-  
+ 
   // Supprimer tous les symboles de statut existants dans la description
   taskLine = taskLine.replace(/(-|\+|&|x|\*)-$/g, '').trimEnd();
   lines[taskLineIndex] = taskLine.replace(taskLine, `${taskLine} ${newStatusSymbol}`);
   mainEditor.session.doc.setValue(lines.join("\n"));
-  
+ 
 }
 
 function updateTaskDelay(task, delayTimestamp) {
   const lines = mainEditor.session.doc.getAllLines();
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex];
-  
+ 
   // Supprimer le délai existant, s'il en existe un
   taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
-  
+ 
   // Ajouter le nouveau délai
   lines[taskLineIndex] = `${taskLine} (delay=${parseInt(delayTimestamp)})`;
+  mainEditor.session.doc.setValue(lines.join("\n"));
+}
+
+function updateTaskAwait(task, awaitTimestamp) {
+  const lines = mainEditor.session.doc.getAllLines();
+  const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
+  let taskLine = lines[taskLineIndex];
+ 
+  // Supprimer le délai existant, s'il en existe un
+  taskLine = taskLine.replace(/await:(\s*\d+)?/g, '').trimEnd();
+ 
+  // Ajouter le nouveau délai
+  lines[taskLineIndex] = `${taskLine} (`+"await"+`=${parseInt(awaitTimestamp)})`;
   mainEditor.session.doc.setValue(lines.join("\n"));
 }
 
@@ -664,10 +704,11 @@ function handleDocButtonClick(task) {
 function handleAwaitConfirmButtonClick(task) {
   const dateInput = document.getElementById("dateInput");
   const durationInput = document.getElementById("durationInput");
-  const inputValue = dateInput.value || new Date().getTime();
-  
-  task.delay = calculateTargetTimestamp(inputValue);
-  
+  const inputValue = dateInput.value || durationInput.value;
+ 
+  const awaitTimestamp = calculateTargetTimestamp(inputValue);
+ 
+  updateTaskAwait(task, awaitTimestamp); // Ajoutez cette ligne
   updateTaskStatus(task, '&-');
   closePopup();
 }
@@ -677,7 +718,7 @@ function handleDelayConfirmButtonClick(task) {
   const inputValue = dateInput.value || durationInput.value;
 
   const delayTimestamp = calculateTargetTimestamp(inputValue);
-  
+ 
   updateTaskDelay(task, delayTimestamp); // Ajoutez cette ligne
   updateTaskStatus(task, '*-');
   closePopup();
@@ -853,22 +894,22 @@ function openPopup(title, task) {
   cancelButton.classList.add("cancel-button");
   cancelButton.textContent = "Cancel";
 
-  const delayButton = createButton(title, (title === 'Delay') ? 'yellow' : 'blue', handleDelayConfirmButtonClick)
+  const delayButton = createButton(title, (title === 'Delay') ? 'yellow' : 'blue', (title === 'Delay') ? handleDelayConfirmButtonClick : handleAwaitConfirmButtonClick)
   delayButton.classList.add("delay-button");
   delayButton.textContent = title;
   delayButton.id = "delayButton"
   delayButton.dataset.task_id = task.id
   delayButton.disabled = true; // Désactive le bouton par défaut
-  
+ 
   const inputContainer = document.createElement("div");
   inputContainer.classList.add("input-container");
 
   inputContainer.appendChild(dateInput);
   inputContainer.appendChild(durationInput);
-  if (title === "Await") {
-    inputContainer.appendChild(peopleLabel);
-    inputContainer.appendChild(peopleTextarea);
-  }
+  //if (title === "Await") {
+    //inputContainer.appendChild(peopleLabel);
+    //inputContainer.appendChild(peopleTextarea);
+  //}
 
   popupContent.appendChild(popupTitle);
   popupContent.appendChild(inputContainer);
@@ -1047,7 +1088,7 @@ function parseYaml(yaml) {
 
   lines.forEach((line, index) => {
     if (line.trim() === '') {
-	  taskId++;
+        taskId++;
       return;
     }
 
@@ -1114,7 +1155,7 @@ function parseYaml(yaml) {
     let descriptions = tasks.map((task) => task.description).join("\n");
     return descriptions;
   }
-  
+ 
   function saveData(data) {
     localStorage.setItem('editor', JSON.stringify(data));
   }
@@ -1193,7 +1234,7 @@ function loadMoreTasks(columnId) {
       totalTasks = inboxTotalTasks;
       loadedTasks = inboxLoadedTasks;
       inboxLoadedTasks += Math.min(20, totalTasks - loadedTasks);
-      updateTab(columnId, inboxTasks.slice(0, inboxLoadedTasks));     
+      updateTab(columnId, inboxTasks.slice(0, inboxLoadedTasks));    
       break;
     case 'done':
       totalTasks = doneTotalTasks;
@@ -1380,7 +1421,7 @@ mainEditor.session.on("change", updateEditor);
 <script>
   const initialData = loadData();
   mainEditor.session.insert({ row: 0, column: 0 }, initialData);
-  
+ 
   let popupEditor;
 
   function initPopupEditor() {
@@ -1417,28 +1458,28 @@ function createTaskElement(task) {
   const taskClass = task.is_project ? "project" : "simple-task";
   const taskElement = createDivWithClass('task');
   taskElement.classList.add(taskClass);
-  
+ 
   if (!popupEditor) {
     initPopupEditor();
   } else {
     popupEditor.resize();
   }
-  
+ 
 
   taskElement.appendChild(createButton('Cancel', 'red', () => handleCancelButtonClick(task)));
   taskElement.appendChild(createButton('Done', 'green', () => handleDoneButtonClick(task)));
   taskElement.appendChild(createButton('Await', 'blue', () => handleAwaitButtonClick(task)));
   taskElement.appendChild(createButton('Delay', 'yellow', () => handleDelayButtonClick(task)));
   taskElement.appendChild(createButton('Doc', 'dark-blue', () => handleDocButtonClick(task)));
-  
+ 
   const taskTextElement = createTaskTextElement(task);  
   taskTextElement.className = 'task-text-action';
-  
+ 
   const prefix = (debugMode) ? "[" + task.id + "] " : "";
   taskTextElement.textContent = (task.clean_context) ? prefix + task.clean_context + " > " + task.clean_description : prefix + task.clean_description;
   taskTextElement.onclick = () => highlightTaskLine(task);
   taskElement.appendChild(taskTextElement);
-  
+ 
   return taskElement;
 }
 
@@ -1584,10 +1625,10 @@ function addAndRemoveLine() {
   const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'élément contenant votre éditeur Ace
   const session = mainEditor.getSession();
   const linesCount = session.getLength();
-  
+ 
   // Ajouter une nouvelle ligne à la fin
   session.insert({ row: linesCount, column: 0 }, '\n');
-  
+ 
   // Supprimer la nouvelle ligne après un certain temps
   setTimeout(() => {
     const newLinesCount = session.getLength();
@@ -1623,7 +1664,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   //function toggleDebugMode() {
   //  debugMode = !debugMode;
-	  
+        
   //  const debugToggleButton = document.getElementById('debugToggleButton');
   //  if (debugMode) {
   //    debugToggleButton.textContent = "Désactiver le mode debug";
