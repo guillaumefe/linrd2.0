@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -1347,8 +1345,8 @@ function addTimestampAttributes(task) {
 function generateTasks(editorContent) {
   if (!editorContent) {
     saveData([])
+	updateTab("inbox", []);
 	updateViewer([]);
-	updateTab(0, [])
     return [];
   }
 
@@ -1653,7 +1651,33 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
+// Assurez-vous que Ace est chargé avant d'appeler cette fonction.
+function addAndRemoveLine() {
+  const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'élément contenant votre éditeur Ace
+  const session = mainEditor.getSession();
+  const linesCount = session.getLength();
+  
+  // Ajouter une nouvelle ligne à la fin
+  session.insert({ row: linesCount, column: 0 }, '\n');
+  
+  // Supprimer la nouvelle ligne après un certain temps
+  setTimeout(() => {
+    const newLinesCount = session.getLength();
+    session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 } });
+  }, 1); // Le délai avant de supprimer la ligne. Ici, il est défini sur 3000 millisecondes (3 secondes).
+}
 
+// S'assurer que la page est complètement chargée
+window.onload = function() {
+  // Assurez-vous que Ace est complètement chargé
+  ace.require(['ace/ace'], function(ace) {
+    // Ajouter et retirer la ligne une fois que tout est prêt
+    addAndRemoveLine();
+  });
+};
+
+</script>
+<script>
   //function toggleDebugMode() {
   //  debugMode = !debugMode;
       
