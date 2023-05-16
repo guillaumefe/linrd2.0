@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -1248,27 +1246,27 @@ function updateLoadMoreButtonVisibility(columnId) {
 
   switch (columnId) {
     case 'inbox':
-      totalTasks = inboxTotalTasks;
+      totalTasks = inboxTasks.length;
       loadedTasks = inboxLoadedTasks;
       break;
     case 'done':
-      totalTasks = doneTotalTasks;
+      totalTasks = doneTasks.length;
       loadedTasks = doneLoadedTasks;
       break;
     case 'doc':
-      totalTasks = docTotalTasks;
+      totalTasks = docTasks.length;
       loadedTasks = docLoadedTasks;
       break;
     case 'await':
-      totalTasks = awaitTotalTasks;
+      totalTasks = awaitTasks.length;
       loadedTasks = awaitLoadedTasks;
       break;
     case 'delay':
-      totalTasks = delayTotalTasks;
+      totalTasks = delayTasks.length;
       loadedTasks = delayLoadedTasks;
       break;
     case 'cancel':
-      totalTasks = cancelTotalTasks;
+      totalTasks = cancelTasks.length;
       loadedTasks = cancelLoadedTasks;
       break;
     default:
@@ -1294,6 +1292,13 @@ function loadMoreTasks(columnId) {
       totalTasks = inboxTotalTasks;
       loadedTasks = inboxLoadedTasks; 
       let numberToLoadInbox = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+
+	  // If no more tasks to load, start from beginning
+	  if (numberToLoadInbox === 0) {
+		inboxLoadedTasks = 0;
+		numberToLoadInbox = Math.min(maxTasksPerColumn, totalTasks);
+	  }
+	  
       updateTab(columnId, inboxTasks.slice(loadedTasks, loadedTasks + numberToLoadInbox));
       inboxLoadedTasks += numberToLoadInbox; 
       break;
@@ -1302,6 +1307,13 @@ function loadMoreTasks(columnId) {
       totalTasks = doneTotalTasks;
       loadedTasks = doneLoadedTasks;
       let numberToLoadDone = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+	  
+	  // If no more tasks to load, start from beginning
+	  if (numberToLoadDone === 0) {
+		inboxLoadedTasks = 0;
+		numberToLoadDone = Math.min(maxTasksPerColumn, totalTasks);
+	  }
+	  
       updateTab(columnId, doneTasks.slice(loadedTasks, loadedTasks + numberToLoadDone));
       doneLoadedTasks += numberToLoadDone;
       break;
@@ -1310,6 +1322,13 @@ function loadMoreTasks(columnId) {
       totalTasks = docTotalTasks;
       loadedTasks = docLoadedTasks;
       let numberToLoadDoc = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+	  
+	  // If no more tasks to load, start from beginning
+	  if (numberToLoadDoc === 0) {
+		inboxLoadedTasks = 0;
+		numberToLoadDoc = Math.min(maxTasksPerColumn, totalTasks);
+	  }
+	  
       updateTab(columnId, docTasks.slice(loadedTasks, loadedTasks + numberToLoadDoc));
       docLoadedTasks += numberToLoadDoc;
       break;
@@ -1318,6 +1337,13 @@ function loadMoreTasks(columnId) {
       totalTasks = awaitTotalTasks;
       loadedTasks = awaitLoadedTasks;
       let numberToLoadAwait = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+	  
+	  // If no more tasks to load, start from beginning
+	  if (numberToLoadAwait === 0) {
+		inboxLoadedTasks = 0;
+		numberToLoadAwait = Math.min(maxTasksPerColumn, totalTasks);
+	  }
+
       updateTab(columnId, awaitTasks.slice(loadedTasks, loadedTasks + numberToLoadAwait));
       awaitLoadedTasks += numberToLoadAwait;
       break;
@@ -1326,6 +1352,13 @@ function loadMoreTasks(columnId) {
       totalTasks = delayTotalTasks;
       loadedTasks = delayLoadedTasks;
       let numberToLoadDelay = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+
+	  // If no more tasks to load, start from beginning
+	  if (numberToLoadDelay === 0) {
+		inboxLoadedTasks = 0;
+		numberToLoadDelay = Math.min(maxTasksPerColumn, totalTasks);
+	  }
+	  
       updateTab(columnId, delayTasks.slice(loadedTasks, loadedTasks + numberToLoadDelay));
       delayLoadedTasks += numberToLoadDelay;
       break;
@@ -1334,6 +1367,13 @@ function loadMoreTasks(columnId) {
       totalTasks = cancelTotalTasks;
       loadedTasks = cancelLoadedTasks;
       let numberToLoadCancel = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+	  
+	  // If no more tasks to load, start from beginning
+	  if (numberToLoadCancel === 0) {
+		inboxLoadedTasks = 0;
+		numberToLoadCancel = Math.min(maxTasksPerColumn, totalTasks);
+	  }
+	  
       updateTab(columnId, cancelTasks.slice(loadedTasks, loadedTasks + numberToLoadCancel));
       cancelLoadedTasks += numberToLoadCancel;
       break;
@@ -1738,7 +1778,6 @@ window.onload = function() {
   //}
 </script>
 <script>
-
 let savedTasks = null;
 
 function saveTasks() {
@@ -1749,6 +1788,14 @@ function restoreTasks() {
   if (savedTasks) {
     allTasks = [...savedTasks];
     savedTasks = null;
+
+    // Update "more" buttons after restoring tasks
+    updateLoadMoreButtonVisibility('inbox');
+    updateLoadMoreButtonVisibility('done');
+    updateLoadMoreButtonVisibility('doc');
+    updateLoadMoreButtonVisibility('await');
+    updateLoadMoreButtonVisibility('delay');
+    updateLoadMoreButtonVisibility('cancel');
   }
 }
 
@@ -1758,27 +1805,48 @@ function filterTasks(keyword) {
     saveTasks();
   }
 
-  // If keyword is empty, restore tasks and return
+  // If keyword is empty, restore tasks and update viewer
   if (!keyword) {
     restoreTasks();
     updateViewer(allTasks);
-    return;
+  } else {
+    // Filter tasks
+    keyword = keyword.toLowerCase();
+    const filteredTasks = allTasks.filter(task =>
+      task.description.toLowerCase().includes(keyword) || 
+      task.context.join(' ').toLowerCase().includes(keyword)
+    );
+
+    // Update the viewer with filtered tasks
+    updateViewer(filteredTasks);
   }
 
-  // Filter tasks
-  keyword = keyword.toLowerCase();
-  const filteredTasks = allTasks.filter(task =>
-    task.description.toLowerCase().includes(keyword) || 
-    task.context.join(' ').toLowerCase().includes(keyword)
-  );
-
-  // Update the viewer with filtered tasks
-  updateViewer(filteredTasks);
+  // Update "more" buttons after filtering tasks
+  updateLoadMoreButtonVisibility('inbox');
+  updateLoadMoreButtonVisibility('done');
+  updateLoadMoreButtonVisibility('doc');
+  updateLoadMoreButtonVisibility('await');
+  updateLoadMoreButtonVisibility('delay');
+  updateLoadMoreButtonVisibility('cancel');
 }
+
+
+
+function hideMoreButtons() {
+  const moreButtons = document.querySelectorAll('[id^="loadMore"]');
+  moreButtons.forEach(button => button.style.display = 'none');
+}
+
+function showMoreButtons() {
+  const moreButtons = document.querySelectorAll('[id^="loadMore"]');
+  moreButtons.forEach(button => button.style.display = 'block');
+}
+
 const searchField = document.getElementById('search-input');
 searchField.addEventListener('input', function() {
   filterTasks(this.value);
 });
+
 </script>
   </body>
 </html>
