@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -250,7 +252,6 @@ input.disabled {
 }
 
 .search-input {
-  display:none;
   width: 100%;
   padding: 5px 10px;
   border: 1px solid #ccc;
@@ -579,6 +580,13 @@ let debugMode = false;
 
 let allTasks = [];
 function updateViewer(tasks) {
+  // Réinitialisez les compteurs et les tableaux de tâches
+  inboxLoadedTasks = 0;
+  doneLoadedTasks = 0;
+  docLoadedTasks = 0;
+  awaitLoadedTasks = 0;
+  delayLoadedTasks = 0;
+  cancelLoadedTasks = 0;
   allTasks = [];
   doneTasks = [];
   docTasks = [];
@@ -586,6 +594,7 @@ function updateViewer(tasks) {
   cancelTasks = [];
   delayTasks = [];
   inboxTasks = [];
+
   tasks.forEach((task, index) => {
     let taskWithTab = { ...task, originalIndex: index }; // Add the original index to each task
 
@@ -640,11 +649,38 @@ function updateViewer(tasks) {
   // Update tabs with tasks
   ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
     let columnTasks = allTasks.filter(task => task.tab === columnId);
-    updateTab(columnId, columnTasks.slice(0, maxTasksPerColumn));
+
+    // Calculate the number of tasks to load
+    let numberToLoad = Math.min(maxTasksPerColumn, columnTasks.length);
+
+    updateTab(columnId, columnTasks.slice(0, numberToLoad), numberToLoad);
+
+    switch(columnId) {
+      case 'inbox':
+        inboxLoadedTasks += numberToLoad;
+        break;
+      case 'done':
+        doneLoadedTasks += numberToLoad;
+        break;
+      case 'cancel':
+        cancelLoadedTasks += numberToLoad;
+        break;
+      case 'delay':
+        delayLoadedTasks += numberToLoad;
+        break;
+      case 'await':
+        awaitLoadedTasks += numberToLoad;
+        break;
+      case 'doc':
+        docLoadedTasks += numberToLoad;
+        break;
+    }
+
     updateLoadMoreButtonVisibility(columnId);
   });
-
 }
+
+
 
 function updateDelayTasksStatus() {
   const now = new Date().getTime();
@@ -656,7 +692,7 @@ function updateDelayTasksStatus() {
   for (let i = 0; i < allTasks.length; i++) {
     const task = allTasks[i];
 
-    if (task.tab === 'delay' && task.delay && task.delay <= now) {
+    if ((task.tab === 'delay' ||task.tab === 'await') && task.delay && task.delay <= now) {
       const taskDescription = task.description;
       const taskRegExp = new RegExp(`^\\s*${taskDescription.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[-+&x*]?`, 'm');
       const match = session.getValue().match(taskRegExp);
@@ -727,10 +763,10 @@ function updateTaskAwait(task, awaitTimestamp) {
   let taskLine = lines[taskLineIndex];
   
   // Supprimer le délai existant, s'il en existe un
-  taskLine = taskLine.replace(/await:(\s*\d+)?/g, '').trimEnd();
+  taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
   
   // Ajouter le nouveau délai
-  lines[taskLineIndex] = `${taskLine} (`+"await"+`=${parseInt(awaitTimestamp)})`;
+  lines[taskLineIndex] = `${taskLine} (`+"delay"+`=${parseInt(awaitTimestamp)})`;
   mainEditor.session.doc.setValue(lines.join("\n"));
 }
 
@@ -928,6 +964,7 @@ function openPopup(title, task) {
   const durationInput = document.createElement("input");
   durationInput.type = "number";
   durationInput.id = "durationInput";
+  durationInput.value = 120;
   durationInput.placeholder = "Duration (in minutes)";
   durationInput.addEventListener("click", handleDurationInputClick);
   durationInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
@@ -941,7 +978,7 @@ function openPopup(title, task) {
   delayButton.textContent = title;
   delayButton.id = "delayButton"
   delayButton.dataset.task_id = task.id
-  delayButton.disabled = true; // Désactive le bouton par défaut
+  delayButton.disabled = false; // Désactive le bouton par défaut
   
   const inputContainer = document.createElement("div");
   inputContainer.classList.add("input-container");
@@ -1255,47 +1292,59 @@ function loadMoreTasks(columnId) {
   switch (columnId) {
     case 'inbox':
       totalTasks = inboxTotalTasks;
-      loadedTasks = inboxLoadedTasks;
-      inboxLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-      updateTab(columnId, inboxTasks.slice(0, inboxLoadedTasks));     
+      loadedTasks = inboxLoadedTasks; 
+      let numberToLoadInbox = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, inboxTasks.slice(loadedTasks, loadedTasks + numberToLoadInbox));
+      inboxLoadedTasks += numberToLoadInbox; 
       break;
 
     case 'done':
       totalTasks = doneTotalTasks;
       loadedTasks = doneLoadedTasks;
-      doneLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-      updateTab(columnId, doneTasks.slice(0, doneLoadedTasks));
+      let numberToLoadDone = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, doneTasks.slice(loadedTasks, loadedTasks + numberToLoadDone));
+      doneLoadedTasks += numberToLoadDone;
       break;
+
     case 'doc':
       totalTasks = docTotalTasks;
       loadedTasks = docLoadedTasks;
-      docLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-      updateTab(columnId, docTasks.slice(0, docLoadedTasks));
+      let numberToLoadDoc = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, docTasks.slice(loadedTasks, loadedTasks + numberToLoadDoc));
+      docLoadedTasks += numberToLoadDoc;
       break;
+
     case 'await':
       totalTasks = awaitTotalTasks;
       loadedTasks = awaitLoadedTasks;
-      awaitLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-      updateTab(columnId, awaitTasks.slice(0, awaitLoadedTasks));
+      let numberToLoadAwait = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, awaitTasks.slice(loadedTasks, loadedTasks + numberToLoadAwait));
+      awaitLoadedTasks += numberToLoadAwait;
       break;
+
     case 'delay':
       totalTasks = delayTotalTasks;
       loadedTasks = delayLoadedTasks;
-      delayLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-      updateTab(columnId, delayTasks.slice(0, delayLoadedTasks));
+      let numberToLoadDelay = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, delayTasks.slice(loadedTasks, loadedTasks + numberToLoadDelay));
+      delayLoadedTasks += numberToLoadDelay;
       break;
+
     case 'cancel':
       totalTasks = cancelTotalTasks;
       loadedTasks = cancelLoadedTasks;
-      cancelLoadedTasks += Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-      updateTab(columnId, cancelTasks.slice(0, cancelLoadedTasks));
+      let numberToLoadCancel = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
+      updateTab(columnId, cancelTasks.slice(loadedTasks, loadedTasks + numberToLoadCancel));
+      cancelLoadedTasks += numberToLoadCancel;
       break;
+
     default:
       return;
   }
 
   updateLoadMoreButtonVisibility(columnId);
 }
+
 
 document.getElementById('loadMoreInbox').addEventListener('click', () => loadMoreTasks('inbox'));
 document.getElementById('loadMoreDone').addEventListener('click', () => loadMoreTasks('done'));
@@ -1393,7 +1442,7 @@ function generateTasks(editorContent) {
       } else {
         task.description = description;
       }
-
+	  
       return task;
     }
   });
@@ -1604,7 +1653,6 @@ function createBoldGreyParagraphWithText(text) {
   mainEditor.session.on("change", () => {
     const content = mainEditor.getValue();
     const tasks = generateTasks(content);
-
   });
 </script>
 <script>
@@ -1688,6 +1736,49 @@ window.onload = function() {
   //    debugToggleButton.textContent = "Activer le mode debug";
   //  }
   //}
+</script>
+<script>
+
+let savedTasks = null;
+
+function saveTasks() {
+  savedTasks = [...allTasks];
+}
+
+function restoreTasks() {
+  if (savedTasks) {
+    allTasks = [...savedTasks];
+    savedTasks = null;
+  }
+}
+
+function filterTasks(keyword) {
+  // Save tasks if they haven't been saved yet
+  if (!savedTasks) {
+    saveTasks();
+  }
+
+  // If keyword is empty, restore tasks and return
+  if (!keyword) {
+    restoreTasks();
+    updateViewer(allTasks);
+    return;
+  }
+
+  // Filter tasks
+  keyword = keyword.toLowerCase();
+  const filteredTasks = allTasks.filter(task =>
+    task.description.toLowerCase().includes(keyword) || 
+    task.context.join(' ').toLowerCase().includes(keyword)
+  );
+
+  // Update the viewer with filtered tasks
+  updateViewer(filteredTasks);
+}
+const searchField = document.getElementById('search-input');
+searchField.addEventListener('input', function() {
+  filterTasks(this.value);
+});
 </script>
   </body>
 </html>
