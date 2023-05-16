@@ -733,14 +733,19 @@ function updateTaskStatus(task, newStatusSymbol) {
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex].trimEnd();
   const currentStatusSymbol = getStatusSymbol(taskLine);
-  
+
   // Supprimer tous les symboles de statut existants dans la description
   taskLine = taskLine.replace(/(-|\+|&|x|\*)-$/g, '').trimEnd();
   
   lines[taskLineIndex] = taskLine.replace(taskLine, `${taskLine} ${newStatusSymbol}`);
   mainEditor.session.doc.setValue(lines.join("\n"));
   
+  // Reapply current search filter after changing task status
+  const searchInput = document.querySelector('#search-input'); // replace this with your actual search input selector
+  const currentSearchFilter = searchInput.value;
+  filterTasks(currentSearchFilter);
 }
+
 
 function updateTaskDelay(task, delayTimestamp) {
   const lines = mainEditor.session.doc.getAllLines();
@@ -1816,10 +1821,14 @@ function filterTasks(keyword) {
     allTasks = [...savedTasks];
   }
 
+  // Regenerate tasks before filtering
+  const editorContent = mainEditor.getValue();
+  allTasks = parseYaml(editorContent);
+
   // Filter tasks
   keyword = keyword.toLowerCase();
   const filteredTasks = allTasks.filter(task =>
-    task.description.toLowerCase().includes(keyword) || 
+    task.description.toLowerCase().includes(keyword) ||
     task.context.join(' ').toLowerCase().includes(keyword)
   );
 
@@ -1827,6 +1836,7 @@ function filterTasks(keyword) {
   updateViewer(filteredTasks);
   hideMoreButtons();
 }
+
 
 
 
