@@ -571,7 +571,7 @@ let debugMode = false;
     const cursorRow = cursorPosition.row;
     const cursorColumn = cursorPosition.column;
     editor_destination.session.insert({row: 0, column: 0}, `${yaml}\n`);
-    editor_destination.gotoLine(cursorRow + 1, cursorColumn);
+    editor_destination.gotoLine(cursorRow, cursorColumn);
     editor_source.setValue("");
     editor_destination.resize();
   }
@@ -1345,6 +1345,7 @@ function addTimestampAttributes(task) {
 function generateTasks(editorContent) {
   if (!editorContent) {
     saveData([])
+	updateViewer([]);
     return [];
   }
 
