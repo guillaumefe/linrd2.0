@@ -1800,35 +1800,34 @@ function restoreTasks() {
 }
 
 function filterTasks(keyword) {
-  // Save tasks if they haven't been saved yet
-  if (!savedTasks) {
-    saveTasks();
-  }
-
-  // If keyword is empty, restore tasks and update viewer
+  // If keyword is empty, restore tasks and return
   if (!keyword) {
     restoreTasks();
     updateViewer(allTasks);
-  } else {
-    // Filter tasks
-    keyword = keyword.toLowerCase();
-    const filteredTasks = allTasks.filter(task =>
-      task.description.toLowerCase().includes(keyword) || 
-      task.context.join(' ').toLowerCase().includes(keyword)
-    );
-
-    // Update the viewer with filtered tasks
-    updateViewer(filteredTasks);
+    showMoreButtons();
+    return;
   }
 
-  // Update "more" buttons after filtering tasks
-  updateLoadMoreButtonVisibility('inbox');
-  updateLoadMoreButtonVisibility('done');
-  updateLoadMoreButtonVisibility('doc');
-  updateLoadMoreButtonVisibility('await');
-  updateLoadMoreButtonVisibility('delay');
-  updateLoadMoreButtonVisibility('cancel');
+  // Save tasks if they haven't been saved yet
+  if (!savedTasks) {
+    saveTasks();
+  } else {
+    // Restore tasks from the savedTasks before filtering
+    allTasks = [...savedTasks];
+  }
+
+  // Filter tasks
+  keyword = keyword.toLowerCase();
+  const filteredTasks = allTasks.filter(task =>
+    task.description.toLowerCase().includes(keyword) || 
+    task.context.join(' ').toLowerCase().includes(keyword)
+  );
+
+  // Update the viewer with filtered tasks
+  updateViewer(filteredTasks);
+  hideMoreButtons();
 }
+
 
 
 
@@ -1838,12 +1837,12 @@ function hideMoreButtons() {
 }
 
 function showMoreButtons() {
-  const moreButtons = document.querySelectorAll('[id^="loadMore"]');
-  moreButtons.forEach(button => button.style.display = 'block');
+  const columnIds = ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'];
+  columnIds.forEach(columnId => updateLoadMoreButtonVisibility(columnId));
 }
 
 const searchField = document.getElementById('search-input');
-searchField.addEventListener('input', function() {
+searchField.addEventListener('keyup', function() {
   filterTasks(this.value);
 });
 
