@@ -1805,25 +1805,16 @@ function restoreTasks() {
 }
 
 function filterTasks(keyword) {
-  // If keyword is empty, restore tasks and return
+  // Regenerate tasks before filtering
+  const editorContent = mainEditor.getValue();
+  allTasks = parseYaml(editorContent);
+
+  // If keyword is empty, update the viewer with all tasks and return
   if (!keyword) {
-    restoreTasks();
     updateViewer(allTasks);
     showMoreButtons();
     return;
   }
-
-  // Save tasks if they haven't been saved yet
-  if (!savedTasks) {
-    saveTasks();
-  } else {
-    // Restore tasks from the savedTasks before filtering
-    allTasks = [...savedTasks];
-  }
-
-  // Regenerate tasks before filtering
-  const editorContent = mainEditor.getValue();
-  allTasks = parseYaml(editorContent);
 
   // Filter tasks
   keyword = keyword.toLowerCase();
