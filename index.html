@@ -530,6 +530,26 @@ input.disabled {
       </div>
     </div>
 <script>
+let maxTasksPerColumn = 10;
+let inboxTotalTasks = 0;
+let doneTotalTasks = 0;
+let docTotalTasks = 0;
+let awaitTotalTasks = 0;
+let delayTotalTasks = 0;
+let cancelTotalTasks = 0;
+let inboxLoadedTasks = 0;
+let doneLoadedTasks = 0;
+let docLoadedTasks = 0;
+let awaitLoadedTasks = 0;
+let delayLoadedTasks = 0;
+let cancelLoadedTasks = 0;
+let inboxTasks = [];
+let doneTasks = [];
+let docTasks = [];
+let awaitTasks = [];
+let delayTasks = [];
+let cancelTasks = [];
+
   function toggleEditor() {
     var editor = document.getElementById('editor');
     if (editor.style.display === 'none') {
@@ -550,7 +570,6 @@ let debugMode = false;
     const cursorPosition = editor_destination.getCursorPosition();
     const cursorRow = cursorPosition.row;
     const cursorColumn = cursorPosition.column;
-    const firstLine = editor_destination.session.getLine(0);
     editor_destination.session.insert({row: 0, column: 0}, `${yaml}\n`);
     editor_destination.gotoLine(cursorRow + 1, cursorColumn);
     editor_source.setValue("");
@@ -574,7 +593,7 @@ function updateViewer(tasks) {
       case '--':
         taskWithTab.tab = 'done';
         doneTasks.push(task);
-        doneTotalTasks++; 
+        doneTotalTasks++;
         break;
       case '+-':
         taskWithTab.tab = 'doc';
@@ -599,7 +618,7 @@ function updateViewer(tasks) {
       default:
         taskWithTab.tab = 'inbox';
         inboxTasks.push(task);
-        inboxTotalTasks++; 
+        inboxTotalTasks++;
         break;
     }
     allTasks.push(taskWithTab);
@@ -625,8 +644,6 @@ function updateViewer(tasks) {
     updateLoadMoreButtonVisibility(columnId);
   });
 
-  // Save the updated data
-  saveData(allTasks);
 }
 
 function updateDelayTasksStatus() {
@@ -765,31 +782,28 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   inputTask.addEventListener("input", function () {
-    const inputLength = inputTask.value.length;
+		const inputLength = inputTask.value.length;
 
-    if (inputLength >= 2) {
-      const intensity = 1 - (inputLength - 1) * 0.05;
-      landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
+		if (inputLength >= 0) {
+		  const intensity = 1 - (inputLength - 1) * 0.05;
+		  landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
 
-if (intensity <= 0) {
-  // Supprime l'élément de la page lorsque l'opacité atteint 0%
-  landingPage.remove();
-
-  // Utilisez setTimeout pour attendre un peu avant de mettre le focus sur l'éditeur et de positionner le curseur
-  setTimeout(() => {
-    mainEditor.focus();
-    mainEditor.gotoLine(1, Infinity, true);
-  }, 50);
-}
+		if (intensity <= 0) {
+		  // Supprime l'élément de la page lorsque l'opacité atteint 0%
+		  landingPage.remove();
+		  mainEditor.gotoLine(0, Infinity, true);
+		  mainEditor.focus();
+		}
     }
 
     // Met à jour la première ligne de l'éditeur Ace avec le contenu de l'input
     const firstLineRange = mainEditor.session.getLine(0).length;
     mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
+
   });
 
   inputTask.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" || e.key === "Escape") {
       // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
       mainEditor.focus();
       mainEditor.gotoLine(1, Infinity, true);
@@ -1185,31 +1199,12 @@ function parseYaml(yaml) {
   }
   
   function saveData(data) {
-    localStorage.setItem('editor', JSON.stringify(data));
+
+	localStorage.setItem('editor', JSON.stringify(data));
+    
   }
 </script>
 <script>
-let maxTasksPerColumn = 10;
-let inboxTotalTasks = 0;
-let doneTotalTasks = 0;
-let docTotalTasks = 0;
-let awaitTotalTasks = 0;
-let delayTotalTasks = 0;
-let cancelTotalTasks = 0;
-let inboxLoadedTasks = 0;
-let doneLoadedTasks = 0;
-let docLoadedTasks = 0;
-let awaitLoadedTasks = 0;
-let delayLoadedTasks = 0;
-let cancelLoadedTasks = 0;
-let inboxTasks = [];
-let doneTasks = [];
-let docTasks = [];
-let awaitTasks = [];
-let delayTasks = [];
-let cancelTasks = [];
-
-
 function updateLoadMoreButtonVisibility(columnId) {
   let totalTasks;
   let loadedTasks;
@@ -1242,11 +1237,11 @@ function updateLoadMoreButtonVisibility(columnId) {
     default:
       return;
   }
-  loadedTasks = (loadedTasks > 0) ? loadedTasks : maxTasksPerColumn;
+
   const remainingTasks = totalTasks - loadedTasks;
   const loadMoreButton = document.getElementById('loadMore' + columnId.charAt(0).toUpperCase() + columnId.slice(1));
 
-  if (remainingTasks > 0) {
+  if (totalTasks > maxTasksPerColumn && remainingTasks > 0) {
     loadMoreButton.style.display = 'block';
   } else {
     loadMoreButton.style.display = 'none';
@@ -1364,6 +1359,8 @@ function generateTasks(editorContent) {
     console.error("Erreur lors du chargement du contenu de l'éditeur :", e);
     return [];
   }
+  
+   saveData(tasks)
 
   // Filtrer les tâches avec le statut "delay"
   const delayTasks = tasks.filter(task => task.status === '*-');
@@ -1435,9 +1432,7 @@ function updateEditor() {
       editor.selection.moveCursorTo(currentRow, newColumn, true);
     }
   }
-  
-  // Save the updated data
-  saveData(allTasks);
+
 }
 
 // Événement de modification du contenu de l'éditeur
@@ -1607,7 +1602,7 @@ function createBoldGreyParagraphWithText(text) {
   mainEditor.session.on("change", () => {
     const content = mainEditor.getValue();
     const tasks = generateTasks(content);
-    //updateViewer(tasks);
+
   });
 </script>
 <script>
@@ -1617,11 +1612,13 @@ function createBoldGreyParagraphWithText(text) {
       initPopupEditor();
     } else {
       popupEditor.resize();
+	  popupEditor.focus();
     }
   }
 
   function closeModal() {
     document.getElementById("modal").style.display = "none";
+	mainEditor.focus();
   }
 
   function validateYaml() {
@@ -1636,33 +1633,7 @@ function createBoldGreyParagraphWithText(text) {
     }
   }
 </script>
-<script>
-// Assurez-vous que Ace est chargé avant d'appeler cette fonction.
-function addAndRemoveLine() {
-  const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'élément contenant votre éditeur Ace
-  const session = mainEditor.getSession();
-  const linesCount = session.getLength();
-  
-  // Ajouter une nouvelle ligne à la fin
-  session.insert({ row: linesCount, column: 0 }, '\n');
-  
-  // Supprimer la nouvelle ligne après un certain temps
-  setTimeout(() => {
-    const newLinesCount = session.getLength();
-    session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 } });
-  }, 1); // Le délai avant de supprimer la ligne. Ici, il est défini sur 3000 millisecondes (3 secondes).
-}
 
-// S'assurer que la page est complètement chargée
-window.onload = function() {
-  // Assurez-vous que Ace est complètement chargé
-  ace.require(['ace/ace'], function(ace) {
-    // Ajouter et retirer la ligne une fois que tout est prêt
-    addAndRemoveLine();
-  });
-};
-
-</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Sélectionnez l'onglet que vous souhaitez cliquer programmation.
