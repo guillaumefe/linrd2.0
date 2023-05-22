@@ -1806,6 +1806,7 @@ function restoreTasks() {
   }
 }
 
+
 function filterTasks(keyword) {
   // Regenerate tasks before filtering
   const editorContent = mainEditor.getValue();
@@ -1819,7 +1820,7 @@ function filterTasks(keyword) {
   }
 
   // Process search keywords
-  const keywords = keyword.split(' ').filter(Boolean);
+  const keywords = extractKeywords(keyword);
   let filteredTasks = allTasks;
 
   // Filter tasks based on search keywords
@@ -1828,22 +1829,28 @@ function filterTasks(keyword) {
       // Negate the phrase
       const phrase = keyword.slice(1, -1).toLowerCase();
       filteredTasks = filteredTasks.filter(task =>
-        !task.description.toLowerCase().includes(phrase) &&
-        !task.context.join(' ').toLowerCase().includes(phrase)
+        !(task.description.toLowerCase().includes(phrase) ||
+          task.context.join(' ').toLowerCase().includes(phrase))
       );
     } else if (keyword.startsWith('+')) {
       // Accentuate the keyword
       const accentuatedKeyword = keyword.slice(1).toLowerCase();
-      filteredTasks = filteredTasks.filter(task =>
-        task.description.toLowerCase().includes(accentuatedKeyword) ||
-        task.context.join(' ').toLowerCase().includes(accentuatedKeyword)
-      );
+      filteredTasks.forEach(task => {
+        if (
+          task.description.toLowerCase().includes(accentuatedKeyword) ||
+          task.context.join(' ').toLowerCase().includes(accentuatedKeyword)
+        ) {
+          task.score = (task.score || 0) + 1;
+        }
+      });
     } else if (keyword.startsWith('-')) {
-      // Reduce the importance of the keyword
-      const reducedKeyword = keyword.slice(1).toLowerCase();
+      // Exclude tasks with the keyword
+      const excludedKeyword = keyword.slice(1).toLowerCase();
       filteredTasks = filteredTasks.filter(task =>
-        !task.description.toLowerCase().includes(reducedKeyword) &&
-        !task.context.join(' ').toLowerCase().includes(reducedKeyword)
+        !(
+          task.description.toLowerCase().includes(excludedKeyword) ||
+          task.context.join(' ').toLowerCase().includes(excludedKeyword)
+        )
       );
     } else {
       // Regular keyword search
@@ -1855,9 +1862,19 @@ function filterTasks(keyword) {
     }
   }
 
+  // Sort tasks by score in descending order
+  filteredTasks.sort((a, b) => (b.score || 0) - (a.score || 0));
+
   // Update the viewer with filtered tasks
   updateViewer(filteredTasks);
   hideMoreButtons();
+}
+
+
+
+function extractKeywords(keyword) {
+  const regex = /"[^"]+"|\S+/g;
+  return keyword.match(regex) || [];
 }
 
 
