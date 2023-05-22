@@ -577,9 +577,14 @@ let debugMode = false;
 
 
 let allTasks = [];
-
 function updateViewer(tasks) {
-  // Réinitialisez les tableaux de tâches
+  // Réinitialisez les compteurs et les tableaux de tâches
+  inboxLoadedTasks = 0;
+  doneLoadedTasks = 0;
+  docLoadedTasks = 0;
+  awaitLoadedTasks = 0;
+  delayLoadedTasks = 0;
+  cancelLoadedTasks = 0;
   allTasks = [];
   doneTasks = [];
   docTasks = [];
@@ -589,7 +594,7 @@ function updateViewer(tasks) {
   inboxTasks = [];
 
   tasks.forEach((task, index) => {
-    let taskWithTab = { ...task, originalIndex: index }; // Ajoutez l'index d'origine à chaque tâche
+    let taskWithTab = { ...task, originalIndex: index }; // Add the original index to each task
 
     switch (task.status) {
       case '--':
@@ -626,30 +631,57 @@ function updateViewer(tasks) {
     allTasks.push(taskWithTab);
   });
 
-  // Triez allTasks par l'index d'origine et le délai
+  // Sort allTasks by the original index and delay
   allTasks.sort((a, b) => {
     if (a.tab === b.tab) {
       if ((a.tab === 'delay' || a.tab === 'await') && a.delay !== b.delay) {
-        return a.delay - b.delay; // trie par délai si les onglets sont 'delay' ou 'await' et les valeurs de délai sont différentes
+        return a.delay - b.delay; // sort by delay if tabs are 'delay' or 'await' and delay values are different
       } else {
-        return a.originalIndex - b.originalIndex; // trie par index d'origine
+        return a.originalIndex - b.originalIndex; // sort by original index
       }
     } else {
-      return 0; // pas de tri entre les onglets différents
+      return 0; // no sorting between different tabs
     }
   });
 
-  // Mettez à jour les onglets avec les tâches
+  // Update tabs with tasks
   ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
     let columnTasks = allTasks.filter(task => task.tab === columnId);
-    let numberToLoad = Math.min(maxTasksPerColumn, columnTasks.length); // Limiter le nombre de tâches à charger
 
-    updateTab(columnId, columnTasks.slice(0, numberToLoad)); // Charger les tâches initiales
+    // Calculate the number of tasks to load
+    let numberToLoad = Math.min(maxTasksPerColumn, columnTasks.length);
+
+    updateTab(columnId, columnTasks.slice(0, numberToLoad), numberToLoad);
+
+    switch(columnId) {
+      case 'inbox':
+        inboxLoadedTasks += numberToLoad;
+        break;
+      case 'done':
+        doneLoadedTasks += numberToLoad;
+        break;
+      case 'cancel':
+        cancelLoadedTasks += numberToLoad;
+        break;
+      case 'delay':
+        delayLoadedTasks += numberToLoad;
+        break;
+      case 'await':
+        awaitLoadedTasks += numberToLoad;
+        break;
+      case 'doc':
+        docLoadedTasks += numberToLoad;
+        break;
+    }
+
     updateLoadMoreButtonVisibility(columnId);
   });
 }
 
+
+
 function updateDelayTasksStatus() {
+  // Vérifier si aucune tâche n'est affichée dans la colonne
   const now = new Date().getTime();
 
   let tasksUpdated = false;
@@ -1254,6 +1286,19 @@ function updateLoadMoreButtonVisibility(columnId) {
     loadMoreButton.style.display = 'block';
   } else {
     loadMoreButton.style.display = 'none';
+    checkForTasksToShow(columnId); // Appeler la fonction de vérification initiale
+  }
+
+  function checkForTasksToShow(columnId) {
+    const remainingTasks = totalTasks - loadedTasks; // Recalculer le nombre de tâches restantes
+    if (totalTasks > maxTasksPerColumn && remainingTasks > 0) {
+      loadMoreButton.style.display = 'block'; // Afficher le bouton "Load More" s'il y a des tâches à afficher
+    } else {
+      // Si aucune tâche à afficher, attendre un court délai puis revérifier
+      setTimeout(() => {
+        checkForTasksToShow(columnId);
+      }, 1000);
+    }
   }
 }
 
@@ -1642,23 +1687,34 @@ function updateTab(tabId, tasks) {
     return;
   }
 
-  const tabTasks = document.getElementById(tabId + '-tasks');
-
   const taskList = document.createElement('div');
   taskList.classList.add("task-list");
+  const existingTasks = new Set(); // Utilisation d'un ensemble pour stocker les tâches existantes
 
-  let numberToLoad = Math.min(maxTasksPerColumn, tasks.length); // Limiter le nombre de tâches à charger
-
-  tasks.slice(0, numberToLoad).forEach((task) => {
-    const taskElement = createTaskElement(task);
-    taskList.appendChild(taskElement);
+  tasks.forEach((task) => {
+    if (!existingTasks.has(task)) { // Vérifier si la tâche existe déjà
+      existingTasks.add(task); // Ajouter la tâche à l'ensemble des tâches existantes
+      const taskElement = createTaskElement(task);
+      taskList.appendChild(taskElement);
+    }
   });
 
-  //tabTasks.innerHTML = ''; // Supprimer le contenu existant de tabTasks pour éviter l'accumulation
+  const tabTasks = document.getElementById(tabId + '-tasks');
+  tabTasks.innerHTML = '';
+  if (tabId === 'inbox') {
+    const emptyInboxMessage = document.getElementById('empty-inbox-message');
+    if (tasks.length === 0) {
+      emptyInboxMessage.style.display = 'block';
+    } else {
+      emptyInboxMessage.style.display = 'none';
+    }
+  }
 
-  // Ajouter les nouvelles tâches à tabTasks
   tabTasks.appendChild(taskList);
+
+  
 }
+
 </script>
 <script>
   mainEditor.session.on("change", () => {
