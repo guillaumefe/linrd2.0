@@ -529,7 +529,7 @@ input.disabled {
       </div>
     </div>
 <script>
-let maxTasksPerColumn = 10;
+let maxTasksPerColumn = 93; //increase if more is loaded on empty page.
 let inboxTotalTasks = 0;
 let doneTotalTasks = 0;
 let docTotalTasks = 0;
@@ -577,6 +577,8 @@ let debugMode = false;
 
 
 let allTasks = [];
+
+
 function updateViewer(tasks) {
   // Réinitialisez les compteurs et les tableaux de tâches
   inboxLoadedTasks = 0;
@@ -681,7 +683,6 @@ function updateViewer(tasks) {
 
 
 function updateDelayTasksStatus() {
-  // Vérifier si aucune tâche n'est affichée dans la colonne
   const now = new Date().getTime();
 
   let tasksUpdated = false;
@@ -1286,19 +1287,6 @@ function updateLoadMoreButtonVisibility(columnId) {
     loadMoreButton.style.display = 'block';
   } else {
     loadMoreButton.style.display = 'none';
-    checkForTasksToShow(columnId); // Appeler la fonction de vérification initiale
-  }
-
-  function checkForTasksToShow(columnId) {
-    const remainingTasks = totalTasks - loadedTasks; // Recalculer le nombre de tâches restantes
-    if (totalTasks > maxTasksPerColumn && remainingTasks > 0) {
-      loadMoreButton.style.display = 'block'; // Afficher le bouton "Load More" s'il y a des tâches à afficher
-    } else {
-      // Si aucune tâche à afficher, attendre un court délai puis revérifier
-      setTimeout(() => {
-        checkForTasksToShow(columnId);
-      }, 1000);
-    }
   }
 }
 
@@ -1680,41 +1668,33 @@ function createBoldGreyParagraphWithText(text) {
 
 </script>
 <script>
-function updateTab(tabId, tasks) {
-  const tab = document.getElementById(tabId);
-  if (!tab) {
-    console.error('Tab not found:', tabId);
-    return;
-  }
+  function updateTab(tabId, tasks) {
+    const tab = document.getElementById(tabId);
+    if (!tab) {
+      console.error('Tab not found:', tabId);
+      return;
+    }
 
-  const taskList = document.createElement('div');
-  taskList.classList.add("task-list");
-  const existingTasks = new Set(); // Utilisation d'un ensemble pour stocker les tâches existantes
-
-  tasks.forEach((task) => {
-    if (!existingTasks.has(task)) { // Vérifier si la tâche existe déjà
-      existingTasks.add(task); // Ajouter la tâche à l'ensemble des tâches existantes
+    const taskList = document.createElement('div');
+    taskList.classList.add("task-list");
+    tasks.forEach((task) => {
       const taskElement = createTaskElement(task);
       taskList.appendChild(taskElement);
-    }
-  });
+    });
 
-  const tabTasks = document.getElementById(tabId + '-tasks');
-  tabTasks.innerHTML = '';
-  if (tabId === 'inbox') {
-    const emptyInboxMessage = document.getElementById('empty-inbox-message');
-    if (tasks.length === 0) {
-      emptyInboxMessage.style.display = 'block';
-    } else {
-      emptyInboxMessage.style.display = 'none';
+    const tabTasks = document.getElementById(tabId + '-tasks');
+    tabTasks.innerHTML = '';
+    if (tabId === 'inbox') {
+      const emptyInboxMessage = document.getElementById('empty-inbox-message');
+      if (tasks.length === 0) {
+        emptyInboxMessage.style.display = 'block';
+      } else {
+        emptyInboxMessage.style.display = 'none';
+      }
     }
+
+    tabTasks.appendChild(taskList);
   }
-
-  tabTasks.appendChild(taskList);
-
-  
-}
-
 </script>
 <script>
   mainEditor.session.on("change", () => {
