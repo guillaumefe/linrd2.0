@@ -1818,19 +1818,47 @@ function filterTasks(keyword) {
     return;
   }
 
-  // Filter tasks
-  keyword = keyword.toLowerCase();
-  const filteredTasks = allTasks.filter(task =>
-    task.description.toLowerCase().includes(keyword) ||
-    task.context.join(' ').toLowerCase().includes(keyword)
-  );
+  // Process search keywords
+  const keywords = keyword.split(' ').filter(Boolean);
+  let filteredTasks = allTasks;
+
+  // Filter tasks based on search keywords
+  for (const keyword of keywords) {
+    if (keyword.startsWith('"') && keyword.endsWith('"')) {
+      // Negate the phrase
+      const phrase = keyword.slice(1, -1).toLowerCase();
+      filteredTasks = filteredTasks.filter(task =>
+        !task.description.toLowerCase().includes(phrase) &&
+        !task.context.join(' ').toLowerCase().includes(phrase)
+      );
+    } else if (keyword.startsWith('+')) {
+      // Accentuate the keyword
+      const accentuatedKeyword = keyword.slice(1).toLowerCase();
+      filteredTasks = filteredTasks.filter(task =>
+        task.description.toLowerCase().includes(accentuatedKeyword) ||
+        task.context.join(' ').toLowerCase().includes(accentuatedKeyword)
+      );
+    } else if (keyword.startsWith('-')) {
+      // Reduce the importance of the keyword
+      const reducedKeyword = keyword.slice(1).toLowerCase();
+      filteredTasks = filteredTasks.filter(task =>
+        !task.description.toLowerCase().includes(reducedKeyword) &&
+        !task.context.join(' ').toLowerCase().includes(reducedKeyword)
+      );
+    } else {
+      // Regular keyword search
+      const regularKeyword = keyword.toLowerCase();
+      filteredTasks = filteredTasks.filter(task =>
+        task.description.toLowerCase().includes(regularKeyword) ||
+        task.context.join(' ').toLowerCase().includes(regularKeyword)
+      );
+    }
+  }
 
   // Update the viewer with filtered tasks
   updateViewer(filteredTasks);
   hideMoreButtons();
 }
-
-
 
 
 
