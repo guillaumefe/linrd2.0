@@ -457,7 +457,7 @@ input.disabled {
             role="tabpanel"
             aria-labelledby="inbox-tab"
           >
-            <h3>Inbox</h3>
+            <h3>Inbox</h3><div id="success-rate" style="font-family:courier; display: none;"></div>
             <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project 
               <i class="fas fa-plus"></i>
             </button>
@@ -578,6 +578,7 @@ let debugMode = false;
 
 let allTasks = [];
 
+let SUCCESS_RATE = 0;
 
 function updateViewer(tasks) {
   // Réinitialisez les compteurs et les tableaux de tâches
@@ -678,6 +679,20 @@ function updateViewer(tasks) {
 
     updateLoadMoreButtonVisibility(columnId);
   });
+
+  // Mise à jour de la variable SUCCESS_RATE
+  let totalNonInboxTasks = doneTasks.length + docTasks.length + awaitTasks.length + cancelTasks.length + delayTasks.length;
+  let totalTasks = tasks.length;
+  SUCCESS_RATE = totalNonInboxTasks / totalTasks;
+
+  // Affichage de SUCCESS_RATE dans l'interface
+  const successRateElement = document.getElementById('success-rate');
+  if (SUCCESS_RATE !== 0) {
+	successRateElement.textContent = `Success Rate: ${(SUCCESS_RATE * 100).toFixed(2)}%`;
+    successRateElement.style.display = 'block';
+  } else {
+    successRateElement.style.display = 'none';
+  }
 }
 
 
