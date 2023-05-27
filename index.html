@@ -1703,15 +1703,27 @@ function createBoldGreyParagraphWithText(text) {
   });
 </script>
 <script>
-  function openModal() {
-    document.getElementById("modal").style.display = "block";
-    if (!popupEditor) {
-      initPopupEditor();
-    } else {
-      popupEditor.resize();
-	  popupEditor.focus();
+function openModal() {
+  document.getElementById("modal").style.display = "block";
+  if (!popupEditor) {
+    initPopupEditor();
+  } else {
+    const searchInput = document.getElementById("search-input");
+    const searchValue = searchInput.value.trim();
+    
+    if (searchValue !== "") {
+      popupEditor.setValue(searchValue + "\n ");
+      popupEditor.clearSelection();
     }
+    
+    popupEditor.resize();
+    popupEditor.focus();
   }
+}
+
+
+
+
 
   function closeModal() {
     document.getElementById("modal").style.display = "none";
