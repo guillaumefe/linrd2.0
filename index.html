@@ -580,6 +580,7 @@ let allTasks = [];
 
 let SUCCESS_RATE = 0;
 
+
 function updateViewer(tasks) {
   // Réinitialisez les compteurs et les tableaux de tâches
   inboxLoadedTasks = 0;
@@ -597,61 +598,60 @@ function updateViewer(tasks) {
   inboxTasks = [];
 
   tasks.forEach((task, index) => {
-    let taskWithTab = { ...task, originalIndex: index }; // Add the original index to each task
+    let taskWithTab = { ...task, originalIndex: index }; // Ajoutez l'index d'origine à chaque tâche
 
-    switch (task.status) {
-      case '--':
-        taskWithTab.tab = 'done';
-        doneTasks.push(task);
-        doneTotalTasks++;
-        break;
-      case '+-':
-        taskWithTab.tab = 'doc';
-        docTasks.push(task);
-        docTotalTasks++; 
-        break;
-      case '&-':
-        taskWithTab.tab = 'await';
-        awaitTasks.push(task);
-        awaitTotalTasks++; 
-        break;
-      case 'x-':
-        taskWithTab.tab = 'cancel';
-        cancelTasks.push(task);
-        cancelTotalTasks++; 
-        break;
-      case '*-':
-        taskWithTab.tab = 'delay';
-        delayTasks.push(task);
-        delayTotalTasks++; 
-        break;
-      default:
-        taskWithTab.tab = 'inbox';
-        inboxTasks.push(task);
-        inboxTotalTasks++;
-        break;
+    if (task.is_project) {
+      taskWithTab.tab = 'project';
+    } else {
+      switch (task.status) {
+        case '--':
+          taskWithTab.tab = 'done';
+          doneTasks.push(task);
+          break;
+        case '+-':
+          taskWithTab.tab = 'doc';
+          docTasks.push(task);
+          break;
+        case '&-':
+          taskWithTab.tab = 'await';
+          awaitTasks.push(task);
+          break;
+        case 'x-':
+          taskWithTab.tab = 'cancel';
+          cancelTasks.push(task);
+          break;
+        case '*-':
+          taskWithTab.tab = 'delay';
+          delayTasks.push(task);
+          break;
+        default:
+          taskWithTab.tab = 'inbox';
+          inboxTasks.push(task);
+          break;
+      }
     }
+
     allTasks.push(taskWithTab);
   });
 
-  // Sort allTasks by the original index and delay
+  // Trier allTasks par l'index d'origine et le délai
   allTasks.sort((a, b) => {
     if (a.tab === b.tab) {
       if ((a.tab === 'delay' || a.tab === 'await') && a.delay !== b.delay) {
-        return a.delay - b.delay; // sort by delay if tabs are 'delay' or 'await' and delay values are different
+        return a.delay - b.delay; // trier par délai si les onglets sont 'delay' ou 'await' et les valeurs de délai sont différentes
       } else {
-        return a.originalIndex - b.originalIndex; // sort by original index
+        return a.originalIndex - b.originalIndex; // trier par index d'origine
       }
     } else {
-      return 0; // no sorting between different tabs
+      return 0; // pas de tri entre les onglets différents
     }
   });
 
-  // Update tabs with tasks
+  // Mettre à jour les onglets avec les tâches
   ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
     let columnTasks = allTasks.filter(task => task.tab === columnId);
 
-    // Calculate the number of tasks to load
+    // Calculer le nombre de tâches à charger
     let numberToLoad = Math.min(maxTasksPerColumn, columnTasks.length);
 
     updateTab(columnId, columnTasks.slice(0, numberToLoad), numberToLoad);
@@ -681,19 +681,16 @@ function updateViewer(tasks) {
   });
 
   // Mise à jour de la variable SUCCESS_RATE
-  let totalNonInboxTasks = doneTasks.length + docTasks.length + awaitTasks.length + cancelTasks.length + delayTasks.length;
-  let totalTasks = tasks.length;
-  SUCCESS_RATE = totalNonInboxTasks / totalTasks;
+  let totalNonProjectTasks = doneTasks.length + docTasks.length + awaitTasks.length + cancelTasks.length + delayTasks.length;
+  let totalTasks = tasks.filter(task => !task.is_project).length;
+  let successRate = totalNonProjectTasks / totalTasks * 100;
 
-  // Affichage de SUCCESS_RATE dans l'interface
-  const successRateElement = document.getElementById('success-rate');
-  if (SUCCESS_RATE !== 0) {
-	successRateElement.textContent = `Success Rate: ${(SUCCESS_RATE * 100).toFixed(2)}%`;
-    successRateElement.style.display = 'block';
-  } else {
-    successRateElement.style.display = 'none';
-  }
+  // Afficher le taux de réussite
+  let successRateElement = document.getElementById('success-rate');
+  successRateElement.textContent = `Success Rate: ${successRate.toFixed(2)}%`;
+  successRateElement.style.display = 'block';
 }
+
 
 
 
