@@ -687,7 +687,7 @@ function updateViewer(tasks) {
 
   // Afficher le taux de réussite
   let successRateElement = document.getElementById('success-rate');
-  successRateElement.textContent = `Success Rate: ${(successRate.toFixed(2)) ? "0" : successRate.toFixed(2)}%`;
+  successRateElement.textContent = `Success Rate: ${(! successRate) ? "0" : successRate.toFixed(2)}%`;
   successRateElement.style.display = 'block';
 }
 
