@@ -903,39 +903,21 @@ function handleAwaitConfirmButtonClick(task) {
   
   const awaitTimestamp = calculateTargetTimestamp(inputValue);
   
-  updateTaskAwait(task, awaitTimestamp);
-
-  // Mettre à jour le compteur d'Await
-  if (!task.awaitCount) { // Si le compteur n'existe pas encore, initialisez-le à 1
-    task.awaitCount = 1;
-  } else { // Sinon, augmentez le compteur
-    task.awaitCount += 1;
-  }
-
+  updateTaskAwait(task, awaitTimestamp); // Ajoutez cette ligne
   updateTaskStatus(task, '&-');
   closePopup();
 }
-
 function handleDelayConfirmButtonClick(task) {
   const dateInput = document.getElementById("dateInput");
   const durationInput = document.getElementById("durationInput");
   const inputValue = dateInput.value || durationInput.value;
-  
+
   const delayTimestamp = calculateTargetTimestamp(inputValue);
-
-  updateTaskDelay(task, delayTimestamp);
-
-  // Mettre à jour le compteur de Delay
-  if (!task.delayCount) { // Si le compteur n'existe pas encore, initialisez-le à 1
-    task.delayCount = 1;
-  } else { // Sinon, augmentez le compteur
-    task.delayCount += 1;
-  }
-
+  
+  updateTaskDelay(task, delayTimestamp); // Ajoutez cette ligne
   updateTaskStatus(task, '*-');
   closePopup();
 }
-
 </script>
 <script>
 let mainEditor = ace.edit("editor");
@@ -1096,21 +1078,10 @@ function openPopup(title, task) {
   const durationInput = document.createElement("input");
   durationInput.type = "number";
   durationInput.id = "durationInput";
-  
-  let count = 1; // Par défaut, si nous n'avons pas de compteurs dans la tâche.
-  if (task.awaitCount && title === "Await") {
-    count = task.awaitCount;
-  } else if (task.delayCount && title === "Delay") {
-    count = task.delayCount;
-  }
-
-  // Ici, nous divisons la valeur par défaut par le compteur approprié.
-  // Si le compteur est 0, nous utilisons 1 pour éviter une division par zéro.
-  durationInput.value = 120 / (count || 1);
-
+  durationInput.value = 120;
   durationInput.placeholder = "Duration (in minutes)";
   durationInput.addEventListener("click", handleDurationInputClick);
-  durationInput.addEventListener("change", handleInputChange); 
+  durationInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
 
   const cancelButton = createButton('Cancel', 'red', closePopup)
   cancelButton.classList.add("cancel-button");
