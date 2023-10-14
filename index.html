@@ -13,8 +13,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- Ajoutez ces lignes à votre en-tête HTML -->
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js"></script>
+
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
@@ -334,6 +336,39 @@
             });
 
             const initialData = loadData();
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const landingPage = document.getElementById("landingPage");
+                const inputTask = document.getElementById("inputTask");
+                if (initialData) {
+                    landingPage.style.display = "none";
+                }
+                inputTask.addEventListener("input", function () {
+                    const inputLength = inputTask.value.length;
+
+                    if (inputLength >= 0) {
+                        const intensity = 1 - (inputLength - 1) * 0.05;
+                        landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
+
+                        if (intensity <= 0) {
+                            // Supprime l'élément de la page lorsque l'opacité atteint 0%
+                            landingPage.remove();
+                            mainEditor.gotoLine(0, Infinity, true);
+                            mainEditor.focus();
+                        }
+                    }
+                    const firstLineRange = mainEditor.session.getLine(0).length;
+                    mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
+                });
+                inputTask.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === "Escape") {
+                        // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
+                        mainEditor.focus();
+                        mainEditor.gotoLine(1, Infinity, true);
+                        landingPage.remove();
+                    }
+                });
+            });
 
         };
 
