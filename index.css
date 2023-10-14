@@ -1,0 +1,286 @@
+body,
+html {
+    height: 100%;
+    margin: 0;
+}
+
+.wrapper {
+    display: flex;
+    height: calc(100% - 56px);
+}
+
+#editor {
+    flex: 1;
+}
+
+#viewer {
+    flex: 1;
+    padding: 10px;
+    overflow-y: scroll;
+    /* border-left: 1px solid #ccc; */
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 1% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+}
+
+#popup-editor {
+    min-height: 420px; /* ou une autre valeur qui convient */
+}
+
+.task {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.task-title {
+    margin-bottom: 5px;
+}
+
+.task-status,
+.task-id, .task-time {
+    margin-bottom: 0;
+    font-size: 0.9em;
+}
+
+.task-list {
+    margin-top: 10px;
+}
+
+.dark-blue {
+    background-color: #0d47a1;
+    color: white;
+}
+
+.button {
+    font-size: 14px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+    .button:disabled {
+        background-color: #cccccc; /* Couleur d'arrière-plan pour les boutons désactivés */
+        color: #999999; /* Couleur du texte pour les boutons désactivés */
+        cursor: not-allowed; /* Change le curseur pour indiquer que le bouton est désactivé */
+    }
+
+.red {
+    background-color: #f44336;
+    color: white;
+}
+
+.green {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.blue {
+    background-color: #2196F3;
+    color: white;
+}
+
+.yellow {
+    background-color: #FFEB3B;
+    color: black;
+}
+
+.description-container {
+    font-family: 'Courier New', monospace;
+    font-weight: normal;
+    display: none;
+    font-size: 12px;
+    margin-top: 3%;
+}
+
+    .description-container h5 {
+        margin: 0;
+        line-height: 0;
+    }
+
+.popup-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.popup-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000; /* Assurez-vous que le popup est placé au-dessus de l'overlay */
+}
+
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ccc;
+    color: #fff;
+    cursor: pointer;
+}
+
+input[type="date"] {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+input[type="number"] {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+input.disabled {
+    background-color: #f8f8f8;
+    cursor: not-allowed;
+}
+
+.popup-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.5); /* Couleur blanche avec 50% d'opacité */
+    z-index: 999; /* Assurez-vous que l'overlay est placé au-dessus des autres éléments */
+}
+
+.landing-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 1);
+    z-index: 1000;
+}
+
+.question {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.task-input {
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    width: 100%;
+    text-align: center;
+}
+
+    .task-input::placeholder {
+        color: white;
+    }
+
+.project {
+    background-color: #e0e0e0;
+    display: none;
+}
+
+.simple-task {
+    background-color: #f9f9f9;
+}
+
+.task-text {
+    cursor: pointer;
+}
+
+    .task-text:hover {
+        font-weight: bold;
+    }
+
+.search-container {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.empty-inbox-message {
+    text-align: center;
+    padding: 20px;
+}
+
+.smiling-face {
+    font-size: 48px;
+}
+
+.empty-inbox-message h2 {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    #editor {
+        display: none;
+        flex: 1;
+        min-width: 100%;
+    }
+}

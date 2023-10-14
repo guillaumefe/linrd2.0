@@ -1,2020 +1,236 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Linrd</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.14.0/js-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    
-    <style>
-      body,
-      html {
-        height: 100%;
-        margin: 0;
-      }
-      .wrapper {
-        display: flex;
-        height: calc(100% - 56px);
-      }
-      #editor {
-        flex: 1;
-      }
-      #viewer {
-        flex: 1;
-        padding: 10px;
-        overflow-y: scroll;
-        /* border-left: 1px solid #ccc; */
-      }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-      }
-      .modal-content {
-        background-color: #fefefe;
-        margin: 1% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 90%;
-      }
-      #popup-editor {
-        min-height: 420px; /* ou une autre valeur qui convient */
-      }
-      .task {
-          background-color: #f8f9fa;
-          border: 1px solid #dee2e6;
-          border-radius: 4px;
-          padding: 15px;
-          margin-bottom: 10px;
-        }
-      .task-title {
-          margin-bottom: 5px;
-        }
-      .task-status,
-      .task-id, .task-time {
-          margin-bottom: 0;
-          font-size: 0.9em;
-        }
-      .task-list {
-          margin-top: 10px;
-        }
-.dark-blue {
-  background-color: #0d47a1;
-  color: white;
-}
-
-.button {
-  font-size: 14px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin: 4px;
-}
-
-.button:disabled {
-  background-color: #cccccc; /* Couleur d'arrière-plan pour les boutons désactivés */
-  color: #999999; /* Couleur du texte pour les boutons désactivés */
-  cursor: not-allowed; /* Change le curseur pour indiquer que le bouton est désactivé */
-}
-
-.red {
-  background-color: #f44336;
-  color: white;
-}
-
-.green {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.blue {
-  background-color: #2196F3;
-  color: white;
-}
-
-.yellow {
-  background-color: #FFEB3B;
-  color: black;
-}
-.description-container {
-  font-family: 'Courier New', monospace;
-  font-weight: normal;
-  display: none;
-  font-size:12px;
-  margin-top: 3%;
-}
-
-.description-container h5 {
-  margin: 0;
-  line-height: 0;
-}
-.popup-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.4);
-}
-.popup-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000; /* Assurez-vous que le popup est placé au-dessus de l'overlay */
-}
-
-
-.popup-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.close-button {
-  margin-top: 10px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: #ccc;
-  color: #fff;
-  cursor: pointer;
-}
-input[type="date"] {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-input[type="number"] {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-input.disabled {
-  background-color: #f8f8f8;
-  cursor: not-allowed;
-}
-.popup-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-
-.input-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.5); /* Couleur blanche avec 50% d'opacité */
-  z-index: 999; /* Assurez-vous que l'overlay est placé au-dessus des autres éléments */
-}
-.landing-page {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 255, 1);
-  z-index: 1000;
-}
-
-.question {
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: white;
-}
-
-.task-input {
-  font-size: 16px;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: white;
-  width: 100%;
-  text-align: center;
-}
-
-.task-input::placeholder {
-  color: white;
-}
-
-.project {
-  background-color: #e0e0e0;
-  display:none;
-}
-
-.simple-task {
-  background-color: #f9f9f9;
-}
-.task-text {
-  cursor: pointer;
-}
-
-.task-text:hover {
-  font-weight: bold;
-}
-.search-container {
-  margin-bottom: 10px;
-  width: 100%;
-}
-
-.search-input {
-  width: 100%;
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-}
-.empty-inbox-message {
-  text-align: center;
-  padding: 20px;
-}
-
-.smiling-face {
-  font-size: 48px;
-}
-
-.empty-inbox-message h2 {
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
-@media (max-width: 768px) {
-  #editor {
-    display: none;
-    flex: 1;
-    min-width:100%;
-  }
-}
-
-    </style>
-  </head>
+    <link rel="stylesheet" href="index.css">
+</head>
 <body>
-  <div id="landingPage" class="landing-page">
-    <div class="question">Que souhaitez-vous faire aujourd'hui?</div>
-    <input id="inputTask" class="task-input" type="text" autofocus />
-  </div>
+    <div id="landingPage" class="landing-page">
+        <div class="question">Que souhaitez-vous faire aujourd'hui?</div>
+        <input id="inputTask" class="task-input" type="text" autofocus />
+    </div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">Linrd.ml</a>
+        <a class="navbar-brand" href="#">Linrd.ml</a>
 
-<button
-  class="navbar-toggler"
-  id="navbarToggler"
-  type="button"
-  data-toggle="collapse"
-  data-target="#navbarNav"
-  aria-controls="navbarNav"
-  aria-expanded="false"
-  aria-label="Toggle navigation"
->
-  <span class="navbar-toggler-icon"></span>
-</button>
+        <button class="navbar-toggler"
+                id="navbarToggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item dropdown">
-            <a
-              class="nav-link dropdown-toggle"
-              href="#"
-              id="navbarDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              Configuration
-            </a>
-            
-<!--div class="dropdown-menu" aria-labelledby="navbarDropdown">
-  <button
-    class="dropdown-item"
-    id="debugToggleButton"
-    onclick="toggleDebugMode()!broken"
-    Activer/désasctiver le mode debug
-  </button-->
-  <!-- Ajoutez ce bouton pour basculer entre les tâches et les dossiers -->
-  <!--button
-    class="dropdown-item"
-    id="toggleTasksAndFolders"
-    onclick="toggleProjects()"
-  >
-    Basculer entre tâches et projets
-  </button>
-</div-->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       id="navbarDropdown"
+                       role="button"
+                       data-toggle="dropdown"
+                       aria-haspopup="true"
+                       aria-expanded="false">
+                        Configuration
+                    </a>
 
-<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-  <button
-    class="dropdown-item"
-    id="toggleEditorButton"
-  >
-    Afficher/cacher l'éditeur
-  </button>
-  <button
-    class="dropdown-item"
-    onclick="toggleTheme()"
-  >
-    Switch light/dark terminal
-  </button>
-  <!-- Ajoutez le nouveau bouton ici -->
-</div>
+                    <!--div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <button
+                        class="dropdown-item"
+                        id="debugToggleButton"
+                        onclick="toggleDebugMode()!broken"
+                        Activer/désasctiver le mode debug
+                      </button-->
+                    <!-- Ajoutez ce bouton pour basculer entre les tâches et les dossiers -->
+                    <!--button
+                        class="dropdown-item"
+                        id="toggleTasksAndFolders"
+                        onclick="toggleProjects()"
+                      >
+                        Basculer entre tâches et projets
+                      </button>
+                    </div-->
+
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <button class="dropdown-item"
+                                id="toggleEditorButton">
+                            Afficher/cacher l'éditeur
+                        </button>
+                        <button class="dropdown-item"
+                                onclick="toggleTheme()">
+                            Switch light/dark terminal
+                        </button>
+                        <!-- Ajoutez le nouveau bouton ici -->
+                    </div>
 
 
 
 
-          </li>
-        </ul>
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a style="display:none" class="nav-link" href="#">Se connecter</a>
-          </li>
-        </ul>
-      </div>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a style="display:none" class="nav-link" href="#">Se connecter</a>
+                </li>
+            </ul>
+        </div>
     </nav>
     <div class="wrapper">
-      <div id="editor"  class="sidebar"></div>
-      <div id="viewer" class="tab-content">
-      <!-- Champ de recherche -->
-<div class="search-container">
-  <input
-    type="text"
-    id="search-input"
-    class="search-input"
-    placeholder="Search"
-  />
-</div>
-
-        <!-- Ajout des onglets -->
-        <ul class="nav nav-tabs">
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="inbox-tab"
-              data-toggle="tab"
-              href="#inbox"
-              >Inbox</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="done-tab"
-              data-toggle="tab"
-              href="#done"
-              >Done</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="cancel-tab"
-              data-toggle="tab"
-              href="#cancel"
-              >Cancel</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="await-tab"
-              data-toggle="tab"
-              href="#await"
-              >Await</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="doc-tab"
-              data-toggle="tab"
-              href="#doc"
-              >Doc</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="delay-tab"
-              data-toggle="tab"
-              href="#delay"
-              >Delay</a
-            >
-          </li>
-            <div id="modal" class="modal">
-              <div class="modal-content">
-                <h2>New Project</h2>
-                <div id="popup-editor"></div>
-                <div id="yaml-error" style="display:none;">
-                  <h5>Erreur dans le contenu YAML :</h5>
-                  <pre id="yaml-error-message" style="color:red;"></pre>
-                </div>
-                <div class="button-row">
-                  <button onclick="validateYaml()" class="btn btn-success">
-                    Valider
-                  </button>
-                  <button onclick="closeModal()" class="btn btn-danger">
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-        </ul>
-        
-        <!-- Contenu des onglets -->
-        <div id="catalog" class="tab-content">
-          <div
-            class="tab-pane fade"
-            id="inbox"
-            role="tabpanel"
-            aria-labelledby="inbox-tab"
-          >
-            <h3>Inbox</h3><div id="success-rate" style="font-family:courier; display: none;"></div>
-			<div id="prediction" style="font-family:courier; display: none;"></div>
-            <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project 
-              <i class="fas fa-plus"></i>
-            </button>
-            <div id="empty-inbox-message" class="empty-inbox-message" style="display: none;">
-              <span role="img" aria-label="sun" class="sun" style="font-size: 50px;">☀️</span>
-              <h2>Tout va bien ! Il n'y a rien à faire pour le moment.</h2>
-              <p>Vous pouvez créer de nouvelles choses <br/>en utilisant le bouton "New Project".</p>
-            
-              <button onclick="openModal()" style="margin-top:5px;margin-left:5px;" class="btn btn-sm">New project 
-                <i class="fas fa-plus"></i>
-              </button>
-            </div>
-            <div id="inbox-tasks"></div>
-            <button id="loadMoreInbox" class="loadMore btn btn-sm" style="display:none;">More</button>
-            </div>
-            <div
-              class="tab-pane fade"
-              id="done"
-              role="tabpanel"
-              aria-labelledby="done-tab"
-            >
-              <h3>Done</h3>
-              <div id="done-tasks"></div>
-              <button id="loadMoreDone" class="loadMore btn btn-sm" style="display:none;">More</button>
-              
+        <div id="editor" class="sidebar"></div>
+        <div id="viewer" class="tab-content">
+            <!-- Champ de recherche -->
+            <div class="search-container">
+                <input type="text"
+                       id="search-input"
+                       class="search-input"
+                       placeholder="Search" />
             </div>
 
-          <div
-            class="tab-pane fade"
-            id="cancel"
-            role="tabpanel"
-            aria-labelledby="cancel-tab"
-          >
-            <h3>Cancel</h3>
-            <div id="cancel-tasks"></div>
-            <button id="loadMoreCancel" class="loadMore btn btn-sm" style="display:none;">More</button>
-          </div>
-          <div
-            class="tab-pane fade"
-            id="await"
-            role="tabpanel"
-            aria-labelledby="await-tab"
-          >
-            <h3>Await</h3>
-            <div id="await-tasks"></div>
-            <button id="loadMoreAwait" class="loadMore btn btn-sm" style="display:none;">More</button>
-          </div>
-          <div
-            class="tab-pane fade"
-            id="doc"
-            role="tabpanel"
-            aria-labelledby="doc-tab"
-          >
-            <h3>Doc</h3>
-            <div id="doc-tasks"></div>
-            <button id="loadMoreDoc" class="loadMore btn btn-sm" style="display:none;">More</button>
-          </div>
-          <div
-            class="tab-pane fade"
-            id="delay"
-            role="tabpanel"
-            aria-labelledby="delay-tab"
-          >
-            <h3>Delay</h3>
-            <div id="delay-tasks"></div>
-            <button id="loadMoreDelay" class="loadMore btn btn-sm" style="display:none;">More</button>
-          </div>
+            <!-- Ajout des onglets -->
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link"
+                       id="inbox-tab"
+                       data-toggle="tab"
+                       href="#inbox">Inbox</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       id="done-tab"
+                       data-toggle="tab"
+                       href="#done">Done</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       id="cancel-tab"
+                       data-toggle="tab"
+                       href="#cancel">Cancel</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       id="await-tab"
+                       data-toggle="tab"
+                       href="#await">Await</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       id="doc-tab"
+                       data-toggle="tab"
+                       href="#doc">Doc</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       id="delay-tab"
+                       data-toggle="tab"
+                       href="#delay">Delay</a>
+                </li>
+                <div id="modal" class="modal">
+                    <div class="modal-content">
+                        <h2>New Project</h2>
+                        <div id="popup-editor"></div>
+                        <div id="yaml-error" style="display:none;">
+                            <h5>Erreur dans le contenu YAML :</h5>
+                            <pre id="yaml-error-message" style="color:red;"></pre>
+                        </div>
+                        <div class="button-row">
+                            <button onclick="validateYaml()" class="btn btn-success">
+                                Valider
+                            </button>
+                            <button onclick="closeModal()" class="btn btn-danger">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </ul>
+
+            <!-- Contenu des onglets -->
+            <div class="tab-pane fade" id="inbox" role="tabpanel" aria-labelledby="inbox-tab">
+                <h3>Inbox</h3>
+                <div id="success-rate" style="font-family:courier; display: none;"></div>
+                <!-- Bouton "New Project" -->
+                <button onclick="openModal()" style="margin-top: 5px; margin-left: 5px;" class="btn btn-sm">
+                    New project
+                    <i class="fas fa-plus"></i>
+                </button>
+                <!-- Bouton d'export Excel aligné à droite -->
+                <button id="exportExcelButton" style="margin-top: 5px; margin-right: 5px;" class="btn btn-sm float-right">
+                    Reporting
+                    <i class="fas fa-file-excel"></i>
+                </button>
+                <!-- Reste du contenu de l'onglet Inbox -->
+                <div id="empty-inbox-message" class="empty-inbox-message" style="display: none;">
+                    <span role="img" aria-label="sun" class="sun" style="font-size: 50px;">☀️</span>
+                    <h2>Tout va bien ! Il n'y a rien à faire pour le moment.</h2>
+                    <p>Vous pouvez créer de nouvelles choses <br />en utilisant le bouton "New Project".</p>
+                    <button onclick="openModal()" style="margin-top: 5px; margin-left: 5px;" class="btn btn-sm">
+                        New project
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="inbox-tasks"></div>
+                <button id="loadMoreInbox" class="loadMore btn btn-sm" style="display: none;">More</button>
+            </div>
+
+
+            <div class="tab-pane fade"
+                 id="done"
+                 role="tabpanel"
+                 aria-labelledby="done-tab">
+                <h3>Done</h3>
+                <div id="done-tasks"></div>
+                <button id="loadMoreDone" class="loadMore btn btn-sm" style="display:none;">More</button>
+
+            </div>
+
+            <div class="tab-pane fade"
+                 id="cancel"
+                 role="tabpanel"
+                 aria-labelledby="cancel-tab">
+                <h3>Cancel</h3>
+                <div id="cancel-tasks"></div>
+                <button id="loadMoreCancel" class="loadMore btn btn-sm" style="display:none;">More</button>
+            </div>
+            <div class="tab-pane fade"
+                 id="await"
+                 role="tabpanel"
+                 aria-labelledby="await-tab">
+                <h3>Await</h3>
+                <div id="await-tasks"></div>
+                <button id="loadMoreAwait" class="loadMore btn btn-sm" style="display:none;">More</button>
+            </div>
+            <div class="tab-pane fade"
+                 id="doc"
+                 role="tabpanel"
+                 aria-labelledby="doc-tab">
+                <h3>Doc</h3>
+                <div id="doc-tasks"></div>
+                <button id="loadMoreDoc" class="loadMore btn btn-sm" style="display:none;">More</button>
+            </div>
+            <div class="tab-pane fade"
+                 id="delay"
+                 role="tabpanel"
+                 aria-labelledby="delay-tab">
+                <h3>Delay</h3>
+                <div id="delay-tasks"></div>
+                <button id="loadMoreDelay" class="loadMore btn btn-sm" style="display:none;">More</button>
+            </div>
         </div>
-      </div>
+        </div>
     </div>
-<script>
-let maxTasksPerColumn = 93; //increase if more is loaded on empty page.
-let inboxTotalTasks = 0;
-let doneTotalTasks = 0;
-let docTotalTasks = 0;
-let awaitTotalTasks = 0;
-let delayTotalTasks = 0;
-let cancelTotalTasks = 0;
-let inboxLoadedTasks = 0;
-let doneLoadedTasks = 0;
-let docLoadedTasks = 0;
-let awaitLoadedTasks = 0;
-let delayLoadedTasks = 0;
-let cancelLoadedTasks = 0;
-let inboxTasks = [];
-let doneTasks = [];
-let docTasks = [];
-let awaitTasks = [];
-let delayTasks = [];
-let cancelTasks = [];
-
-  function toggleEditor() {
-    var editor = document.getElementById('editor');
-    if (editor.style.display === 'none') {
-      editor.style.display = 'block';
-    } else {
-      editor.style.display = 'none';
-    }
-  }
-
-  // Attachez la fonction à l'écouteur d'événements du bouton
-  document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
-
-</script>
-<script>
-let debugMode = false;
-
-  function addTaskToTop(editor_source, editor_destination, yaml) {
-    const cursorPosition = editor_destination.getCursorPosition();
-    const cursorRow = cursorPosition.row;
-    const cursorColumn = cursorPosition.column;
-    editor_destination.session.insert({row: 0, column: 0}, `${yaml}\n`);
-    editor_destination.gotoLine(cursorRow, cursorColumn);
-    editor_source.setValue("");
-    editor_destination.resize();
-  }
-
-
-let allTasks = [];
-
-let SUCCESS_RATE = 0;
-
-// Initialisez le tableau de l'historique des taux de réussite. Chaque élément est un objet avec un taux de réussite et un timestamp.
-let successRateHistory = [];
-
-
-
-
-function updateViewer(tasks) {
-  // Réinitialisez les compteurs et les tableaux de tâches
-  inboxLoadedTasks = 0;
-  doneLoadedTasks = 0;
-  docLoadedTasks = 0;
-  awaitLoadedTasks = 0;
-  delayLoadedTasks = 0;
-  cancelLoadedTasks = 0;
-  allTasks = [];
-  doneTasks = [];
-  docTasks = [];
-  awaitTasks = [];
-  cancelTasks = [];
-  delayTasks = [];
-  inboxTasks = [];
-
-  tasks.forEach((task, index) => {
-    let taskWithTab = { ...task, originalIndex: index }; // Ajoutez l'index d'origine à chaque tâche
-
-    if (task.is_project) {
-      taskWithTab.tab = 'project';
-    } else {
-      switch (task.status) {
-        case '--':
-          taskWithTab.tab = 'done';
-          doneTasks.push(task);
-          break;
-        case '+-':
-          taskWithTab.tab = 'doc';
-          docTasks.push(task);
-          break;
-        case '&-':
-          taskWithTab.tab = 'await';
-          awaitTasks.push(task);
-          break;
-        case 'x-':
-          taskWithTab.tab = 'cancel';
-          cancelTasks.push(task);
-          break;
-        case '*-':
-          taskWithTab.tab = 'delay';
-          delayTasks.push(task);
-          break;
-        default:
-          taskWithTab.tab = 'inbox';
-          inboxTasks.push(task);
-          break;
-      }
-    }
-
-    allTasks.push(taskWithTab);
-  });
-
-  // Trier allTasks par l'index d'origine et le délai
-  allTasks.sort((a, b) => {
-    if (a.tab === b.tab) {
-      if ((a.tab === 'delay' || a.tab === 'await') && a.delay !== b.delay) {
-        return a.delay - b.delay; // trier par délai si les onglets sont 'delay' ou 'await' et les valeurs de délai sont différentes
-      } else {
-        return a.originalIndex - b.originalIndex; // trier par index d'origine
-      }
-    } else {
-      return 0; // pas de tri entre les onglets différents
-    }
-  });
-
-  // Mettre à jour les onglets avec les tâches
-  ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
-    let columnTasks = allTasks.filter(task => task.tab === columnId);
-
-    // Calculer le nombre de tâches à charger
-    let numberToLoad = Math.min(maxTasksPerColumn, columnTasks.length);
-
-    updateTab(columnId, columnTasks.slice(0, numberToLoad), numberToLoad);
-
-    switch (columnId) {
-      case 'inbox':
-        inboxLoadedTasks += numberToLoad;
-        break;
-      case 'done':
-        doneLoadedTasks += numberToLoad;
-        break;
-      case 'cancel':
-        cancelLoadedTasks += numberToLoad;
-        break;
-      case 'delay':
-        delayLoadedTasks += numberToLoad;
-        break;
-      case 'await':
-        awaitLoadedTasks += numberToLoad;
-        break;
-      case 'doc':
-        docLoadedTasks += numberToLoad;
-        break;
-    }
-
-    updateLoadMoreButtonVisibility(columnId);
-  });
-
-  //// Mise à jour de la variable SUCCESS_RATE
-  let totalNonProjectTasks = doneTasks.length + docTasks.length + awaitTasks.length + cancelTasks.length + delayTasks.length;
-let totalTasks = tasks.filter(task => !task.is_project).length;
-
-if (totalTasks > 0) { // Évite la division par zéro
-  let successRate = (totalNonProjectTasks / totalTasks) * 100;
-
-  let now = Date.now();
-
-  // Ajoutez le taux de réussite actuel et le moment actuel à l'historique des taux de réussite
-  successRateHistory.push({ rate: successRate, time: now });
-
-  // Calculer le délai moyen entre les changements de taux de réussite
-  let totalDelay = 0;
-  let totalTimeBetweenTasks = 0;
-  let count = successRateHistory.length;
-
-  for (let i = 1; i < count; i++) {
-    let changeInRate = successRateHistory[i].rate - successRateHistory[i - 1].rate;
-    let changeInTime = successRateHistory[i].time - successRateHistory[i - 1].time;
-
-    if (changeInRate !== 0) {
-      totalDelay += changeInTime / changeInRate;
-    }
-
-    totalTimeBetweenTasks += changeInTime;
-  }
-
-  let averageDelay = totalDelay / (count - 1);
-  let averageTimeBetweenTasks = totalTimeBetweenTasks / (count - 1);
-
-  // Prédire quand le taux de réussite atteindra 100%
-  let remainingSuccess = 100 - successRate;
-  let tasksRemaining = totalTasks - totalNonProjectTasks;
-  let totalTimeRemaining = averageTimeBetweenTasks * tasksRemaining;
-
-  let secondsRemaining = Math.floor(totalTimeRemaining / 1000) % 60;
-  let minutesRemaining = Math.floor((totalTimeRemaining / 1000 / 60) % 60);
-  let hoursRemaining = Math.floor(totalTimeRemaining / 1000 / 60 / 60);
-
-  // Afficher le taux de réussite et le temps restant
-
-   if (successRate.toFixed(2) != 0) {
-    let successRateElement = document.getElementById('success-rate');
-    successRateElement.textContent = `Success Rate: ${(!successRate) ? "0" : successRate.toFixed(2)}%`;
-    successRateElement.style.display = 'block';
-   }
-
-  if(hoursRemaining || minutesRemaining && successRate.toFixed(2) == 100) {
-   let predictionElement = document.getElementById('prediction');
-   predictionElement.textContent = `ETA: ${hoursRemaining} hours, ${minutesRemaining} minutes`;
-   predictionElement.style.display = 'block';
-  }
-} else {
-  // Afficher le taux de réussite
-  let successRateElement = document.getElementById('success-rate');
-  successRateElement.textContent = `Success Rate: 0%`;
-  successRateElement.style.display = 'block';
-}
-
-}
-
-
-
-
-
-
-
-function formatTime(milliseconds) {
-  let totalSeconds = Math.floor(milliseconds / 1000);
-  let totalMinutes = Math.floor(totalSeconds / 60);
-  let totalHours = Math.floor(totalMinutes / 60);
-  let totalDays = Math.floor(totalHours / 24);
-
-  let days = totalDays;
-  let hours = totalHours % 24;
-  let minutes = totalMinutes % 60;
-  let seconds = totalSeconds % 60;
-
-  let result = '';
-  if (days > 0) {
-    result += `${days} day(s) `;
-  }
-  if (hours > 0) {
-    result += `${hours} hour(s) `;
-  }
-  if (minutes > 0) {
-    result += `${minutes} minute(s) `;
-  }
-  if (seconds > 0) {
-    result += `${seconds} second(s) `;
-  }
-
-  return result || '0 seconds';
-}
-
-
-
-
-
-
-
-
-
-
-function updateDelayTasksStatus() {
-  const now = new Date().getTime();
-
-  let tasksUpdated = false;
-  const editor = ace.edit("editor");
-  const session = editor.getSession();
-  
-  for (let i = 0; i < allTasks.length; i++) {
-    const task = allTasks[i];
-
-    if ((task.tab === 'delay' ||task.tab === 'await') && task.delay && task.delay <= now) {
-      const taskDescription = task.description;
-      const taskRegExp = new RegExp(`^\\s*${taskDescription.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[-+&x*]?`, 'm');
-      const match = session.getValue().match(taskRegExp);
-      
-      if (match) {
-        const lineNumber = session.getValue().substring(0, match.index).split('\n').length - 1;
-        const lineContent = session.getLine(lineNumber);
-        const updatedLine = lineContent.replace(/[-+&x*]{1,2}/g, '').trimEnd().replace(/\(delay *=[^ ]*\)/g, '').trimEnd();
-        
-        // Update the task status in allTasks
-        allTasks[i].status = null;
-        allTasks[i].tab = 'inbox';
-        tasksUpdated = true;
-        
-        // Update the line in the editor
-        session.replace({ start: { row: lineNumber, column: 0 }, end: { row: lineNumber, column: lineContent.length } }, updatedLine);
-      }
-    }
-  }
-
-  if (tasksUpdated) {
-    // Update tabs with new data
-    ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
-      let columnTasks = allTasks.filter(task => task.tab === columnId);
-      updateTab(columnId, columnTasks.slice(0, maxTasksPerColumn));
-      updateLoadMoreButtonVisibility(columnId);
-    });
-    
-  }
-  
-}
-
-// Appeler la fonction updateDelayTasksStatus toutes les 60 secondes (60000 ms)
-setInterval(updateDelayTasksStatus, 6000);
-
-</script>
-<script>
-function updateTaskStatus(task, newStatusSymbol) {
-  const lines = mainEditor.session.doc.getAllLines();
-  const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
-  let taskLine = lines[taskLineIndex].trimEnd();
-  const currentStatusSymbol = getStatusSymbol(taskLine);
-
-  // Supprimer tous les symboles de statut existants dans la description
-  taskLine = taskLine.replace(/(-|\+|&|x|\*)-$/g, '').trimEnd();
-  
-  lines[taskLineIndex] = taskLine.replace(taskLine, `${taskLine} ${newStatusSymbol}`);
-  mainEditor.session.doc.setValue(lines.join("\n"));
-  
-  // Reapply current search filter after changing task status
-  const searchInput = document.querySelector('#search-input'); // replace this with your actual search input selector
-  const currentSearchFilter = searchInput.value;
-  filterTasks(currentSearchFilter);
-}
-
-
-function updateTaskDelay(task, delayTimestamp) {
-  const lines = mainEditor.session.doc.getAllLines();
-  const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
-  let taskLine = lines[taskLineIndex];
-  
-  // Supprimer le délai existant, s'il en existe un
-  taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
-  
-  // Ajouter le nouveau délai
-  lines[taskLineIndex] = `${taskLine} (delay=${parseInt(delayTimestamp)})`;
-  mainEditor.session.doc.setValue(lines.join("\n"));
-}
-
-function updateTaskAwait(task, awaitTimestamp) {
-  const lines = mainEditor.session.doc.getAllLines();
-  const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
-  let taskLine = lines[taskLineIndex];
-  
-  // Supprimer le délai existant, s'il en existe un
-  taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
-  
-  // Ajouter le nouveau délai
-  lines[taskLineIndex] = `${taskLine} (`+"delay"+`=${parseInt(awaitTimestamp)})`;
-  mainEditor.session.doc.setValue(lines.join("\n"));
-}
-
-function handleCancelButtonClick(task) {
-  updateTaskStatus(task, 'x-');
-}
-
-function handleDoneButtonClick(task) {
-  updateTaskStatus(task, '--');
-}
-
-function handleDocButtonClick(task) {
-  updateTaskStatus(task, '+-');
-}
-
-function handleAwaitConfirmButtonClick(task) {
-  const dateInput = document.getElementById("dateInput");
-  const durationInput = document.getElementById("durationInput");
-  const inputValue = dateInput.value || durationInput.value;
-  
-  const awaitTimestamp = calculateTargetTimestamp(inputValue);
-  
-  updateTaskAwait(task, awaitTimestamp); // Ajoutez cette ligne
-  updateTaskStatus(task, '&-');
-  closePopup();
-}
-function handleDelayConfirmButtonClick(task) {
-  const dateInput = document.getElementById("dateInput");
-  const durationInput = document.getElementById("durationInput");
-  const inputValue = dateInput.value || durationInput.value;
-
-  const delayTimestamp = calculateTargetTimestamp(inputValue);
-  
-  updateTaskDelay(task, delayTimestamp); // Ajoutez cette ligne
-  updateTaskStatus(task, '*-');
-  closePopup();
-}
-</script>
-<script>
-let mainEditor = ace.edit("editor");
-document.addEventListener("DOMContentLoaded", function () {
-  const landingPage = document.getElementById("landingPage");
-  const inputTask = document.getElementById("inputTask");
-
-  if (!getCookie("firstVisit")) {
-    setCookie("firstVisit", "visited", 365);
-  } else {
-    landingPage.style.display = "none";
-  }
-
-  inputTask.addEventListener("input", function () {
-		const inputLength = inputTask.value.length;
-
-		if (inputLength >= 0) {
-		  const intensity = 1 - (inputLength - 1) * 0.05;
-		  landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
-
-		if (intensity <= 0) {
-		  // Supprime l'élément de la page lorsque l'opacité atteint 0%
-		  landingPage.remove();
-		  mainEditor.gotoLine(0, Infinity, true);
-		  mainEditor.focus();
-		}
-    }
-
-    // Met à jour la première ligne de l'éditeur Ace avec le contenu de l'input
-    const firstLineRange = mainEditor.session.getLine(0).length;
-    mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
-
-  });
-
-  inputTask.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.key === "Escape") {
-      // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
-      mainEditor.focus();
-      mainEditor.gotoLine(1, Infinity, true);
-      landingPage.remove();
-    }
-  });
-
-});
-
-function setCookie(cname, cvalue, exdays) {
-  const d = new Date();
-  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-  const expires = "expires=" + d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function getCookie(cname) {
-  const name = cname + "=";
-  const decodedCookie = decodeURIComponent(document.cookie);
-
-  const ca = decodedCookie.split(";");
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === " ") {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) === 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return "";
-}
-
-</script>
-<script>
-function calculateTargetTimestamp(inputValue) {
-  let targetTimestamp;
-  const now = new Date();
-
-  if (inputValue.includes("-")) { // Date format : yyyy-mm-dd
-    targetTimestamp = new Date(inputValue).getTime();
-  } else { // Duration format : number of minutes
-    const minutes = parseInt(inputValue);
-    const durationInMs = minutes * 60 * 1000;
-    targetTimestamp = now.getTime() + durationInMs;
-  }
-
-  return targetTimestamp;
-}
-</script>
-
-<script>
-
-function handleAwaitButtonClick(task) {
-  openPopup("Await", task);
-}
-
-function handleDelayButtonClick(task) {
-  openPopup("Delay", task);
-}
-
-function handleDateInputClick() {
-  const dateInput = document.getElementById("dateInput");
-  const durationInput = document.getElementById("durationInput");
-
-  dateInput.disabled = false;
-  dateInput.classList.remove("disabled");
-  durationInput.disabled = true;
-  durationInput.classList.add("disabled");
-}
-
-function handleDurationInputClick() {
-  const dateInput = document.getElementById("dateInput");
-  const durationInput = document.getElementById("durationInput");
-
-  dateInput.disabled = true;
-  dateInput.classList.add("disabled");
-  durationInput.disabled = false;
-  durationInput.classList.remove("disabled");
-}
-
-function handleInputChange() {
-  const dateInput = document.getElementById("dateInput");
-  const durationInput = document.getElementById("durationInput");
-  const delayButton = document.getElementById("delayButton");
-
-  if (dateInput.value || durationInput.value) {
-    delayButton.disabled = false;
-  } else {
-    delayButton.disabled = true;
-  }
-}
-
-function openPopup(title, task) {
-
-  const overlay = document.createElement("div");
-  overlay.classList.add("overlay");
-
-  const peopleLabel = document.createElement("label");
-  peopleLabel.textContent = "Related People:";
-
-  const peopleTextarea = document.createElement("textarea");
-  peopleTextarea.id = "peopleTextarea";
-  peopleTextarea.placeholder = "Enter the names of the related people, separated by commas";
-
-  const popupContainer = document.createElement("div");
-  popupContainer.id = "popupContainer";
-  popupContainer.classList.add("popup-container");
-
-  const popupContent = document.createElement("div");
-  popupContent.classList.add("popup-content");
-
-  const popupTitle = document.createElement("h2");
-  popupTitle.textContent = title + " until :";
-
-  const dateInput = document.createElement("input");
-  dateInput.type = "date";
-  dateInput.id = "dateInput";
-  dateInput.addEventListener("click", handleDateInputClick);
-  dateInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
-
-  const durationInput = document.createElement("input");
-  durationInput.type = "number";
-  durationInput.id = "durationInput";
-  durationInput.value = 120;
-  durationInput.placeholder = "Duration (in minutes)";
-  durationInput.addEventListener("click", handleDurationInputClick);
-  durationInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
-
-  const cancelButton = createButton('Cancel', 'red', closePopup)
-  cancelButton.classList.add("cancel-button");
-  cancelButton.textContent = "Cancel";
-
-  const delayButton = createButton(title, (title === 'Delay') ? 'yellow' : 'blue', (title === 'Delay') ? handleDelayConfirmButtonClick : handleAwaitConfirmButtonClick)
-  delayButton.classList.add("delay-button");
-  delayButton.textContent = title;
-  delayButton.id = "delayButton"
-  delayButton.dataset.task_id = task.id
-  delayButton.disabled = false; // Désactive le bouton par défaut
-  
-  const inputContainer = document.createElement("div");
-  inputContainer.classList.add("input-container");
-
-  inputContainer.appendChild(dateInput);
-  inputContainer.appendChild(durationInput);
-  //if (title === "Await") {
-    //inputContainer.appendChild(peopleLabel);
-    //inputContainer.appendChild(peopleTextarea);
-  //}
-
-  popupContent.appendChild(popupTitle);
-  popupContent.appendChild(inputContainer);
-  popupContent.appendChild(delayButton);
-  popupContent.appendChild(cancelButton);
-
-
-  popupContainer.appendChild(popupContent);
-
-  document.body.appendChild(overlay);
-  document.body.appendChild(popupContainer);
-}
-
-function closePopup() {
-  const popupContainer = document.getElementById("popupContainer");
-  const overlay = document.querySelector(".overlay");
-  document.body.removeChild(popupContainer);
-  document.body.removeChild(overlay);
-}
-
-</script>
-<script>
-function cleanUpDescription(content) {
-  content = content.trim();
-
-  // Supprimer les attributs entre parenthèses
-  content = content.replace(/\([^()]+\)/g, '');
-
-  // Retirer les bullet points de liste du début de la phrase
-  content = content.replace(/^\s*[-*]*\s*/, '');
-
-  // Retirer les ":" résiduels à la fin de la description
-  content = content.replace(/:\s*$/, '');
-
-  // Retirer les symboles "--", "x-", "*-", "+-", et "&+"
-  content = content.replace(/(-|x|\*|\+|&)-$/g, '');
-
-  // Mettre en majuscule la première lettre de la description
-  content = content.charAt(0).toUpperCase() + content.slice(1);
-
-  // Mettre en majuscule tout caractère après un signe de ponctuation demandant une majuscule
-  content = content.replace(/([.!?])\s*(\w)/g, (match, punctuation, letter) => {
-    return punctuation + ' ' + letter.toUpperCase();
-  });
-
-  return content.trim(); // Supprimer les espaces supplémentaires en début et fin de la description
-}
-
-function cleanUpContext(context_array) {
-
-  let i = 0;
-  let result = "";
-  for (; i <= context_array.length - 1; i++) {
-    result += cleanUpDescription(context_array[i]);
-    result += " > ";
-  }
-  return result.trimEnd().slice(0, -1);
-}
-
-
-</script>
-<script>
-  function getStatusSymbol(line) {
-    const match = line.trimEnd().match(/(--|\+\-|&\-|x\-|\*-)$/);
-    return match ? match[1] : null;
-  }
-  function getIndent(line) {
-    return line.search(/\S|$/);
-  }
-  function getDescription(line) {
-    return line.replace(/^\s*[\+\-\*]*\s*:\>?\s*/, '');
-  }
-  function isProject(line, index, lines) {
-    const childrenRegex = /:\s*$/;
-    const childTaskRegex = /^\s{2,}[\+\-\*]/;
-
-    if (line.match(childrenRegex)) {
-      const indent = getIndent(line);
-      let nextLine = lines[index + 1];
-      let hasChild = false;
-
-      while (nextLine && getIndent(nextLine) > indent) {
-        if (nextLine.match(childTaskRegex)) {
-          hasChild = true;
-          break;
-        }
-        index++;
-        nextLine = lines[index + 1];
-      }
-      return hasChild;
-    }
-    return false;
-  }
-function getTaskDetails(line, taskId, index, lines) {
-  const indent = getIndent(line);
-  const statusSymbol = getStatusSymbol(line);
-  let description = getDescription(line);
-  const attributes = extractAttributes(description);
-
-  const atimeMatch = attributes.atime ? attributes.atime.match(/\(ctime=(.*)\)$/) : null;
-  let existingAtime = atimeMatch ? atimeMatch[1] : null;
-  let atimeSet = false;
-
-  if (!existingAtime) {
-    const now = new Date().getTime();
-    const timestamp = now;
-    existingAtime = timestamp;
-    atimeSet = true;
-  }
-
-  return {
-    description: attributes.description || description,
-    clean_description : cleanUpDescription(attributes.description || description),
-    is_project:  isProject(line, index, lines),
-    status: statusSymbol,
-    context: [],
-    indent,
-    id: `${taskId}`,
-    atime: existingAtime,
-    attributes: attributes,
-    clean_context: "",
-    delay: attributes.delay || null,
-  };
-}
-
-
-</script>
-<script>
-  function extractAttributes(description) {
-    const attributes = {};
-    const matches = description.match(/\(([a-z]+)=(.*?)\)/g);
-    if (matches) {
-      matches.forEach((match) => {
-        const attributeMatch = match.match(/\(([a-z]+)=(.*?)\)/);
-        if (attributeMatch && attributeMatch.length === 3) {
-          const attributeName = attributeMatch[1];
-          const attributeValue = attributeMatch[2];
-          attributes[attributeName] = attributeValue;
-        }
-      });
-    }
-    return attributes;
-  }
-</script>
-<script>
-  function getParentTask(indent) {
-    for (let i = contextStack.length - 1; i >= 0; i--) {
-      if (contextStack[i].indent < indent) {
-        return contextStack[i];
-      }
-    }
-    return null;
-  }
-</script>
-<script>
-function parseYaml(yaml) {
-  const lines = yaml.split("\n");
-  const tasks = [];
-  let taskId = 1;
-  const contextStack = [];
-
-  const isChildTask = (line, index) => {
-    const indent = getIndent(line);
-    const nextLine = lines[index + 1];
-    return nextLine && getIndent(nextLine) > indent;
-  };
-
-  const getParentTask = (indent) => {
-    for (let i = contextStack.length - 1; i >= 0; i--) {
-      if (contextStack[i].indent < indent) {
-        return contextStack[i];
-      }
-    }
-    return null;
-  };
-
-  lines.forEach((line, index) => {
-    if (line.trim() === '') {
-      taskId++;
-      return;
-    }
-
-    const task = getTaskDetails(line, taskId, index, lines);
-    const parentTask = getParentTask(task.indent);
-
-    if (parentTask) {
-      task.context = parentTask.context.slice();
-      task.context.push(parentTask.id);
-    }
-
-    if (isChildTask(line, index)) {
-      task.is_project = true;
-    }
-
-    tasks.push(task);
-    taskId++;
-
-    contextStack.push(task);
-  });
-
-  tasks.forEach((task) => {
-    task.context = task.context.map((taskId) => {
-      const matchingTask = tasks.find((t) => t.id === taskId);
-      return matchingTask ? matchingTask.description : taskId;
-    });
-    task.clean_context = cleanUpContext(task.context); // Ajoutez cette ligne pour attribuer la valeur de clean_context
-  });
-
-  return tasks;
-}
-</script>
-<script>
-  function toggleTheme() {
-    let theme = mainEditor.getTheme();
-    let newTheme =
-      theme === "ace/theme/monokai"
-        ? "ace/theme/github"
-        : "ace/theme/monokai";
-    mainEditor.setTheme(newTheme);
-    popupEditor.setTheme(newTheme);
-  }
-</script>
-<script>
-  function parseProjects(editorContent) {
-    const lines = editorContent.split('\n');
-    const projects = [];
-
-    lines.forEach((line, index) => {
-      if (isProject(line, index, lines)) {
-        const description = line.replace(':', '').trim();
-        projects.push({ description });
-      }
-    });
-
-    return projects;
-  }
-</script>
-<script>
-
-  function loadData() {
-    const data = localStorage.getItem("editor");
-    const tasks = data ? JSON.parse(data) : [];
-    let descriptions = tasks.map((task) => task.description).join("\n");
-    return descriptions;
-  }
-  
-  function saveData(data) {
-
-	localStorage.setItem('editor', JSON.stringify(data));
-    
-  }
-</script>
-<script>
-function updateLoadMoreButtonVisibility(columnId) {
-  let totalTasks;
-  let loadedTasks;
-
-  switch (columnId) {
-    case 'inbox':
-      totalTasks = inboxTasks.length;
-      loadedTasks = inboxLoadedTasks;
-      break;
-    case 'done':
-      totalTasks = doneTasks.length;
-      loadedTasks = doneLoadedTasks;
-      break;
-    case 'doc':
-      totalTasks = docTasks.length;
-      loadedTasks = docLoadedTasks;
-      break;
-    case 'await':
-      totalTasks = awaitTasks.length;
-      loadedTasks = awaitLoadedTasks;
-      break;
-    case 'delay':
-      totalTasks = delayTasks.length;
-      loadedTasks = delayLoadedTasks;
-      break;
-    case 'cancel':
-      totalTasks = cancelTasks.length;
-      loadedTasks = cancelLoadedTasks;
-      break;
-    default:
-      return;
-  }
-
-  const remainingTasks = totalTasks - loadedTasks;
-  const loadMoreButton = document.getElementById('loadMore' + columnId.charAt(0).toUpperCase() + columnId.slice(1));
-
-  if (totalTasks > maxTasksPerColumn && remainingTasks > 0) {
-    loadMoreButton.style.display = 'block';
-  } else {
-    loadMoreButton.style.display = 'none';
-  }
-}
-
-function loadMoreTasks(columnId) {
-  let totalTasks;
-  let loadedTasks;
-
-  switch (columnId) {
-    case 'inbox':
-      totalTasks = inboxTotalTasks;
-      loadedTasks = inboxLoadedTasks; 
-      let numberToLoadInbox = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-
-	  // If no more tasks to load, start from beginning
-	  if (numberToLoadInbox === 0) {
-		inboxLoadedTasks = 0;
-		numberToLoadInbox = Math.min(maxTasksPerColumn, totalTasks);
-	  }
-	  
-      updateTab(columnId, inboxTasks.slice(loadedTasks, loadedTasks + numberToLoadInbox));
-      inboxLoadedTasks += numberToLoadInbox; 
-      break;
-
-    case 'done':
-      totalTasks = doneTotalTasks;
-      loadedTasks = doneLoadedTasks;
-      let numberToLoadDone = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-	  
-	  // If no more tasks to load, start from beginning
-	  if (numberToLoadDone === 0) {
-		inboxLoadedTasks = 0;
-		numberToLoadDone = Math.min(maxTasksPerColumn, totalTasks);
-	  }
-	  
-      updateTab(columnId, doneTasks.slice(loadedTasks, loadedTasks + numberToLoadDone));
-      doneLoadedTasks += numberToLoadDone;
-      break;
-
-    case 'doc':
-      totalTasks = docTotalTasks;
-      loadedTasks = docLoadedTasks;
-      let numberToLoadDoc = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-	  
-	  // If no more tasks to load, start from beginning
-	  if (numberToLoadDoc === 0) {
-		inboxLoadedTasks = 0;
-		numberToLoadDoc = Math.min(maxTasksPerColumn, totalTasks);
-	  }
-	  
-      updateTab(columnId, docTasks.slice(loadedTasks, loadedTasks + numberToLoadDoc));
-      docLoadedTasks += numberToLoadDoc;
-      break;
-
-    case 'await':
-      totalTasks = awaitTotalTasks;
-      loadedTasks = awaitLoadedTasks;
-      let numberToLoadAwait = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-	  
-	  // If no more tasks to load, start from beginning
-	  if (numberToLoadAwait === 0) {
-		inboxLoadedTasks = 0;
-		numberToLoadAwait = Math.min(maxTasksPerColumn, totalTasks);
-	  }
-
-      updateTab(columnId, awaitTasks.slice(loadedTasks, loadedTasks + numberToLoadAwait));
-      awaitLoadedTasks += numberToLoadAwait;
-      break;
-
-    case 'delay':
-      totalTasks = delayTotalTasks;
-      loadedTasks = delayLoadedTasks;
-      let numberToLoadDelay = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-
-	  // If no more tasks to load, start from beginning
-	  if (numberToLoadDelay === 0) {
-		inboxLoadedTasks = 0;
-		numberToLoadDelay = Math.min(maxTasksPerColumn, totalTasks);
-	  }
-	  
-      updateTab(columnId, delayTasks.slice(loadedTasks, loadedTasks + numberToLoadDelay));
-      delayLoadedTasks += numberToLoadDelay;
-      break;
-
-    case 'cancel':
-      totalTasks = cancelTotalTasks;
-      loadedTasks = cancelLoadedTasks;
-      let numberToLoadCancel = Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
-	  
-	  // If no more tasks to load, start from beginning
-	  if (numberToLoadCancel === 0) {
-		inboxLoadedTasks = 0;
-		numberToLoadCancel = Math.min(maxTasksPerColumn, totalTasks);
-	  }
-	  
-      updateTab(columnId, cancelTasks.slice(loadedTasks, loadedTasks + numberToLoadCancel));
-      cancelLoadedTasks += numberToLoadCancel;
-      break;
-
-    default:
-      return;
-  }
-
-  updateLoadMoreButtonVisibility(columnId);
-}
-
-
-document.getElementById('loadMoreInbox').addEventListener('click', () => loadMoreTasks('inbox'));
-document.getElementById('loadMoreDone').addEventListener('click', () => loadMoreTasks('done'));
-document.getElementById('loadMoreDoc').addEventListener('click', () => loadMoreTasks('doc'));
-document.getElementById('loadMoreAwait').addEventListener('click', () => loadMoreTasks('await'));
-document.getElementById('loadMoreDelay').addEventListener('click', () => loadMoreTasks('delay'));
-document.getElementById('loadMoreCancel').addEventListener('click', () => loadMoreTasks('cancel'));
-
-</script>
-<script>
-let showFolders = true;
-
-// Fonction de comparaison (sort) pour trier par attribut `delay`
-function compareTasksByDelay(a, b) {
-  if (a.delay < b.delay) {
-    return 1;
-  } else if (a.delay > b.delay) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
-
-function addTimestampAttributes(task) {
-  const now = new Date().getTime();
-  const attributes = [];
-
-  if (task.atime !== null && task.atime !== undefined) {
-    attributes.push(`(ctime=${task.atime})`);
-  }
-
-  if (task.mtime !== null && task.mtime !== undefined) {
-    attributes.push(`(mtime=${task.mtime})`);
-  }
-
-  if (attributes.length > 0) {
-    const attributeString = attributes.join('');
-    task.description = `${task.description}${attributeString}`;
-  }
-
-  return task;
-}
-
-
-
-
-function generateTasks(editorContent) {
-  if (!editorContent) {
-    saveData([])
-	updateTab("inbox", []);
-	updateViewer([]);
-    return [];
-  }
-
-  let tasks;
-  let projects;
-
-  try {
-    tasks = parseYaml(editorContent);
-    projects = parseProjects(editorContent);
-    updateViewer(tasks);
-  } catch (e) {
-    console.error("Erreur lors du chargement du contenu de l'éditeur :", e);
-    return [];
-  }
-  
-   saveData(tasks)
-
-  // Filtrer les tâches avec le statut "delay"
-  const delayTasks = tasks.filter(task => task.status === '*-');
-
-  return delayTasks.map(task => {
-    task.description = task.description.trimEnd();
-
-    if (task.description.includes("(ctime=")) {
-      return task;
-    } else {
-      const now = new Date().getTime();
-      const atime = ` (ctime=${now})`;
-      const attributes = [];
-
-      if (task.attributes.mtime !== null && task.attributes.mtime !== undefined) {
-        attributes.push(`mtime=${task.attributes.mtime}`);
-      }
-      // ctime is taken from atime
-      if (task.attributes.atime !== null && task.attributes.atime !== undefined) {
-        attributes.push(`ctime=${task.attributes.atime}`);
-      }
-
-      const attributesString = attributes.length > 0 ? `(${attributes.join(",")})` : "";
-      const description = task.description + (attributesString ? " " : "") + attributesString + atime;
-
-      if (projects.some(project => project.description === description)) {
-        task.description = description + ":";
-      } else {
-        task.description = description;
-      }
-	  
-      return task;
-    }
-  });
-}
-
-</script>
-<script>
-// Fonction pour mettre à jour l'éditeur
-function updateEditor() {
-  const editor = ace.edit("editor");
-  const session = editor.getSession();
-  const cursor = editor.selection.getCursor();
-
-  // Récupérer la ligne actuelle
-  const currentRow = cursor.row;
-  const currentLine = session.getLine(currentRow);
-
-  // Vérifier si la ligne est une tâche de plus de 1 caractère
-  if (currentLine.trim().length >= 1) {
-    const indent = currentLine.match(/^\s*/)[0]; // Récupérer l'indentation de la ligne
-
-    // Vérifier si la ligne commence déjà par "(ctime="
-    if (!currentLine.trim().startsWith("(ctime=")) {
-      // Insérer "(ctime=__timestamp__) " au début de la ligne
-      const newTimestamp = `(ctime=${new Date().getTime()}) `;
-      const updatedLine = `${indent}${newTimestamp}${currentLine.trim()}`;
-
-      // Récupérer la position actuelle du curseur
-      const currentColumn = cursor.column;
-
-      // Insérer le texte mis à jour dans l'éditeur
-      session.replace({ start: { row: currentRow, column: 0 }, end: { row: currentRow, column: currentLine.length } }, updatedLine);
-
-      // Calculer la nouvelle position du curseur
-      const newColumn = currentColumn + newTimestamp.length;
-
-      // Déplacer le curseur à la nouvelle position
-      editor.selection.moveCursorTo(currentRow, newColumn, true);
-    }
-  }
-
-}
-
-// Événement de modification du contenu de l'éditeur
-mainEditor.session.on("change", updateEditor);
-
-</script>
-
-<script>
-  const initialData = loadData();
-  mainEditor.session.insert({ row: 0, column: 0 }, initialData);
-  
-  let popupEditor;
-
-  function initPopupEditor() {
-    popupEditor = ace.edit("popup-editor");
-    popupEditor.setTheme("ace/theme/github");
-    popupEditor.session.setMode("ace/mode/yaml");
-  }
-
-function highlightTaskLine(task) {
-  const editor = ace.edit('editor');
-  const lineNumber = task.id - 1;
-
-  // Désélectionner toute sélection précédente
-  editor.selection.clearSelection();
-
-  // Mettre en évidence la ligne correspondante
-  editor.selection.moveCursorToPosition({ row: lineNumber, column: 0 });
-  editor.selection.selectLine();
-
-  // Faites défiler l'éditeur jusqu'à la ligne en surbrillance
-  editor.scrollToLine(lineNumber, true, true, () => {});
-  editor.focus();
-}
-
-
-
-function createTaskElement(task) {
-
-  // Vérifier si la description de la tâche est vide ou composée uniquement d'espaces
-  if (!task.description || task.description.trim() === '') {
-    return null;
-  }
-
-  const taskClass = task.is_project ? "project" : "simple-task";
-  const taskElement = createDivWithClass('task');
-  taskElement.classList.add(taskClass);
-  
-  if (!popupEditor) {
-    initPopupEditor();
-  } else {
-    popupEditor.resize();
-  }
-  
-
-  taskElement.appendChild(createButton('Cancel', 'red', () => handleCancelButtonClick(task)));
-  taskElement.appendChild(createButton('Done', 'green', () => handleDoneButtonClick(task)));
-  taskElement.appendChild(createButton('Await', 'blue', () => handleAwaitButtonClick(task)));
-  taskElement.appendChild(createButton('Delay', 'yellow', () => handleDelayButtonClick(task)));
-  taskElement.appendChild(createButton('Doc', 'dark-blue', () => handleDocButtonClick(task)));
-  
-  const taskTextElement = createTaskTextElement(task);  
-  taskTextElement.className = 'task-text-action';
-  
-  taskTextElement.onclick = () => highlightTaskLine(task);
-  taskElement.appendChild(taskTextElement);
-  
-  return taskElement;
-}
-
-
-function createDivWithClass(className) {
-  const div = document.createElement('div');
-  div.classList.add(className);
-  return div;
-}
-
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp);
-  const year = date.getFullYear();
-  const month = ("0" + (date.getMonth() + 1)).slice(-2);
-  const day = ("0" + date.getDate()).slice(-2);
-  return `${day}/${month}/${year}`;
-}
-
-function createTaskTextElement(task) {
-  let context = createBoldGreyParagraphWithText(task.clean_context);
-  let action = createParagraphWithText(task.clean_description);
-  let container = createDivWithClass("action");
-  const delayText = document.createElement("div");
-  delayText.style.display = "flex";
-  
-  // Ajoute le timestamp du délai s'il existe, se transforme en deadline
-  if (task.delay) {
-    delayText.textContent = `[${formatTimestamp(parseInt(task.delay,10))}]`;
-    delayText.style.color = "grey";
-	action.style.marginLeft = "5px";
-    context.appendChild(delayText);
-  }
-  delayText.appendChild(action);
-  context.appendChild(delayText);
-  container.appendChild(context);
-  return container;
-}
-
-function createButton(label, className, onClick) {
-  const button = document.createElement('button');
-  button.classList.add('button', className);
-  button.textContent = label;
-  button.addEventListener('click', onClick);
-  return button;
-}
-
-function createSpanWithText(text) {
-  const span = document.createElement('span');
-  span.textContent = text;
-  return span;
-}
-
-function createParagraphWithText(text) {
-  const paragraph = document.createElement('p');
-  paragraph.textContent = text;
-  return paragraph;
-}
-
-function createBoldGreyParagraphWithText(text) {
-  const paragraph = document.createElement('p');
-  const boldText = document.createElement('strong');
-  boldText.textContent = text;
-  paragraph.appendChild(boldText);
-  paragraph.style.color = 'grey';
-  return paragraph;
-}
-
-
-</script>
-<script>
-  function updateTab(tabId, tasks) {
-    const tab = document.getElementById(tabId);
-    if (!tab) {
-      console.error('Tab not found:', tabId);
-      return;
-    }
-
-    const taskList = document.createElement('div');
-    taskList.classList.add("task-list");
-    tasks.forEach((task) => {
-      const taskElement = createTaskElement(task);
-      taskList.appendChild(taskElement);
-    });
-
-    const tabTasks = document.getElementById(tabId + '-tasks');
-    tabTasks.innerHTML = '';
-    if (tabId === 'inbox') {
-      const emptyInboxMessage = document.getElementById('empty-inbox-message');
-      if (tasks.length === 0) {
-        emptyInboxMessage.style.display = 'block';
-      } else {
-        emptyInboxMessage.style.display = 'none';
-      }
-    }
-
-    tabTasks.appendChild(taskList);
-  }
-</script>
-<script>
-  mainEditor.session.on("change", () => {
-    const content = mainEditor.getValue();
-    const tasks = generateTasks(content);
-  });
-</script>
-<script>
-function openModal() {
-  document.getElementById("modal").style.display = "block";
-  if (!popupEditor) {
-    initPopupEditor();
-  } else {
-    const searchInput = document.getElementById("search-input");
-    const searchValue = searchInput.value.trim();
-    
-    if (searchValue !== "") {
-      popupEditor.setValue(searchValue + "\n ");
-      popupEditor.clearSelection();
-    }
-    
-    popupEditor.resize();
-    popupEditor.focus();
-  }
-}
-
-
-
-
-
-  function closeModal() {
-    document.getElementById("modal").style.display = "none";
-	mainEditor.focus();
-  }
-
-  function validateYaml() {
-    let content = popupEditor.getValue();
-    try {
-      addTaskToTop(popupEditor, mainEditor, content);
-      closeModal();
-      document.getElementById("yaml-error").style.display = "none";
-    } catch (e) {
-      document.getElementById("yaml-error-message").innerText = e.message;
-      document.getElementById("yaml-error").style.display = "block";
-    }
-  }
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Sélectionnez l'onglet que vous souhaitez cliquer programmation.
-  var onglet = document.getElementById('inbox-tab');
-
-  // Déclencher le clic sur l'onglet
-  var event = new MouseEvent('click', {
-    view: window,
-    bubbles: true,
-    cancelable: true
-  });
-  onglet.dispatchEvent(event);
-});
-</script>
-<script>
-// Assurez-vous que Ace est chargé avant d'appeler cette fonction.
-function addAndRemoveLine() {
-  const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'élément contenant votre éditeur Ace
-  const session = mainEditor.getSession();
-  const linesCount = session.getLength();
-  
-  // Ajouter une nouvelle ligne à la fin
-  session.insert({ row: linesCount, column: 0 }, '\n');
-  
-  // Supprimer la nouvelle ligne après un certain temps
-  setTimeout(() => {
-    const newLinesCount = session.getLength();
-    session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 } });
-  }, 1); // Le délai avant de supprimer la ligne. Ici, il est défini sur 3000 millisecondes (3 secondes).
-}
-
-// S'assurer que la page est complètement chargée
-window.onload = function() {
-  // Assurez-vous que Ace est complètement chargé
-  ace.require(['ace/ace'], function(ace) {
-    // Ajouter et retirer la ligne une fois que tout est prêt
-    addAndRemoveLine();
-  });
-};
-
-</script>
-<script>
-  //function toggleDebugMode() {
-  //  debugMode = !debugMode;
-      
-  //  const debugToggleButton = document.getElementById('debugToggleButton');
-  //  if (debugMode) {
-  //    debugToggleButton.textContent = "Désactiver le mode debug";
-  //  } else {
-  //    debugToggleButton.textContent = "Activer le mode debug";
-  //  }
-  //}
-</script>
-<script>
-let savedTasks = null;
-
-function saveTasks() {
-  savedTasks = [...allTasks];
-}
-
-function restoreTasks() {
-  if (savedTasks) {
-    allTasks = [...savedTasks];
-    savedTasks = null;
-
-    // Update "more" buttons after restoring tasks
-    updateLoadMoreButtonVisibility('inbox');
-    updateLoadMoreButtonVisibility('done');
-    updateLoadMoreButtonVisibility('doc');
-    updateLoadMoreButtonVisibility('await');
-    updateLoadMoreButtonVisibility('delay');
-    updateLoadMoreButtonVisibility('cancel');
-  }
-}
-
-
-let searchTimeoutId;
-
-function filterTasks(keyword) {
-  // Clear previous search timeout
-  clearTimeout(searchTimeoutId);
-
-  // Set a new search timeout
-  searchTimeoutId = setTimeout(() => {
-    // Regenerate tasks before filtering
-    const editorContent = mainEditor.getValue();
-    allTasks = parseYaml(editorContent);
-
-    // If keyword is empty, update the viewer with all tasks and return
-    if (!keyword) {
-      updateViewer(allTasks);
-      showMoreButtons();
-      return;
-    }
-
-    // Process search keywords
-    const keywords = extractKeywords(keyword);
-    let filteredTasks = allTasks;
-
-    // Filter tasks based on search keywords
-    for (const keyword of keywords) {
-      if (keyword.startsWith('"') && keyword.endsWith('"')) {
-        // Negate the phrase
-        const phrase = keyword.slice(1, -1).toLowerCase();
-        filteredTasks = filteredTasks.filter(task =>
-          !(task.description.toLowerCase().includes(phrase) ||
-          task.context.join(' ').toLowerCase().includes(phrase))
-        );
-      } else if (keyword.startsWith('+')) {
-        // Accentuate the keyword
-        const accentuatedKeyword = keyword.slice(1).toLowerCase();
-        filteredTasks = filteredTasks.filter(task =>
-          task.description.toLowerCase().includes(accentuatedKeyword) ||
-          task.context.join(' ').toLowerCase().includes(accentuatedKeyword)
-        );
-      } else if (keyword.startsWith('-')) {
-        // Reduce the importance of the keyword
-        const reducedKeyword = keyword.slice(1).toLowerCase();
-        filteredTasks = filteredTasks.filter(task =>
-          !(
-            task.description.toLowerCase().includes(reducedKeyword) ||
-            task.context.join(' ').toLowerCase().includes(reducedKeyword)
-          )
-        );
-      } else {
-        // Regular keyword search
-        const regularKeyword = keyword.toLowerCase();
-        filteredTasks = filteredTasks.filter(task =>
-          task.description.toLowerCase().includes(regularKeyword) ||
-          task.context.join(' ').toLowerCase().includes(regularKeyword)
-        );
-      }
-    }
-
-    // Update the viewer with filtered tasks
-    updateViewer(filteredTasks);
-    hideMoreButtons();
-  }, 500); // Adjust the timeout duration (in milliseconds) as needed
-}
-
-
-function extractKeywords(keyword) {
-  const regex = /"[^"]+"|\S+/g;
-  return keyword.match(regex) || [];
-}
-
-
-
-function hideMoreButtons() {
-  const moreButtons = document.querySelectorAll('[id^="loadMore"]');
-  moreButtons.forEach(button => button.style.display = 'none');
-}
-
-function showMoreButtons() {
-  const columnIds = ['inbox', 'done', 'doc', 'await', 'delay', 'cancel'];
-  columnIds.forEach(columnId => updateLoadMoreButtonVisibility(columnId));
-}
-
-const searchField = document.getElementById('search-input');
-searchField.addEventListener('keyup', function() {
-  filterTasks(this.value);
-});
-
-</script>
-  </body>
+    <script src="index.js"></script>
+</body>
 </html>
