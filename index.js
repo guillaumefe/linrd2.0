@@ -26,25 +26,7 @@ let showFolders = true;
 let popupEditor;
 let savedTasks = null;
 let searchTimeoutId;
-let mainEditor = ace.edit("editor");
 const searchField = document.getElementById('search-input');
-
-// CONFIGURATION ON LOAD
-window.onload = function() {
-  ace.require(['ace/ace'], function(ace) {
-    addAndRemoveLine();
-  });
-    regenerateTasks()
-
-    // CONFIGURATION BEFORE
-    mainEditor.session.on("change", updateEditor);
-    mainEditor.session.insert({ row: 0, column: 0 }, initialData);
-    mainEditor.session.on("change", () => {
-        const content = mainEditor.getValue();
-        const tasks = generateTasks(content);
-    });
-
-};
 
 // EVENT LISTENERS
 document.addEventListener('DOMContentLoaded', function() {
