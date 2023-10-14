@@ -322,18 +322,17 @@
         // CONFIGURATION ON LOAD
         window.onload = function () {
             window.mainEditor = ace.edit("editor");
-            let mainEditor = window.mainEditor
             ace.require(['ace/ace'], function (ace) {
                 addAndRemoveLine();
             });
             regenerateTasks()
 
             // CONFIGURATION BEFORE
-            mainEditor.session.on("change", updateEditor);
-            mainEditor.session.insert({ row: 0, column: 0 }, initialData);
-            mainEditor.session.on("change", () => {
-                const content = mainEditor.getValue();
-                const tasks = generateTasks(content);
+            window.mainEditor.session.on("change", updateEditor);
+            window.mainEditor.session.insert({ row: 0, column: 0 }, initialData);
+            window.mainEditor.session.on("change", () => {
+                const content = window.mainEditor.getValue();
+                generateTasks(content);
             });
 
             document.addEventListener("DOMContentLoaded", function () {
@@ -352,18 +351,18 @@
                         if (intensity <= 0) {
                             // Supprime l'élément de la page lorsque l'opacité atteint 0%
                             landingPage.remove();
-                            mainEditor.gotoLine(0, Infinity, true);
-                            mainEditor.focus();
+                            window.mainEditor.gotoLine(0, Infinity, true);
+                            window.mainEditor.focus();
                         }
                     }
-                    const firstLineRange = mainEditor.session.getLine(0).length;
-                    mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
+                    const firstLineRange = window.mainEditor.session.getLine(0).length;
+                    window.mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
                 });
                 inputTask.addEventListener("keydown", function (e) {
                     if (e.key === "Enter" || e.key === "Escape") {
                         // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
-                        mainEditor.focus();
-                        mainEditor.gotoLine(1, Infinity, true);
+                        window.mainEditor.focus();
+                        window.mainEditor.gotoLine(1, Infinity, true);
                         landingPage.remove();
                     }
                 });
