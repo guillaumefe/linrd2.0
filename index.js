@@ -104,7 +104,7 @@ function createParagraphWithText(text) {
 
 function closeModal() {
     document.getElementById("modal").style.display = "none";
-    mainEditor.focus();
+    window.mainEditor.focus();
 }
 
 function saveTasks() {
@@ -214,7 +214,7 @@ function toggleEditor() {
 }
 
 function updateTaskDelay(task, delayTimestamp) {
-    const lines = mainEditor.session.doc.getAllLines();
+    const lines = window.mainEditor.session.doc.getAllLines();
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex];
   
@@ -223,12 +223,12 @@ function updateTaskDelay(task, delayTimestamp) {
   
     // Ajouter le nouveau délai
     lines[taskLineIndex] = `${taskLine} (delay=${parseInt(delayTimestamp)})`;
-    mainEditor.session.doc.setValue(lines.join("\n"));
+    window.mainEditor.session.doc.setValue(lines.join("\n"));
 }
 
 
 function updateTaskAwait(task, awaitTimestamp) {
-    const lines = mainEditor.session.doc.getAllLines();
+    const lines = window.mainEditor.session.doc.getAllLines();
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex];
   
@@ -237,7 +237,7 @@ function updateTaskAwait(task, awaitTimestamp) {
   
     // Ajouter le nouveau délai
     lines[taskLineIndex] = `${taskLine} (`+"delay"+`=${parseInt(awaitTimestamp)})`;
-    mainEditor.session.doc.setValue(lines.join("\n"));
+    window.mainEditor.session.doc.setValue(lines.join("\n"));
 }
 
 function createDivWithClass(className) {
@@ -291,7 +291,7 @@ function addTaskToTop(editor_source, editor_destination, yaml) {
 
 
 function updateTaskStatus(task, newStatusSymbol) {
-  const lines = mainEditor.session.doc.getAllLines();
+  const lines = window.mainEditor.session.doc.getAllLines();
   const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
   let taskLine = lines[taskLineIndex].trimEnd();
   const currentStatusSymbol = getStatusSymbol(taskLine);
@@ -300,7 +300,7 @@ function updateTaskStatus(task, newStatusSymbol) {
   taskLine = taskLine.replace(/(-|\+|&|x|\*)-$/g, '').trimEnd();
   
   lines[taskLineIndex] = taskLine.replace(taskLine, `${taskLine} ${newStatusSymbol}`);
-  mainEditor.session.doc.setValue(lines.join("\n"));
+  window.mainEditor.session.doc.setValue(lines.join("\n"));
   
   // Reapply current search filter after changing task status
   const searchInput = document.querySelector('#search-input'); // replace this with your actual search input selector
@@ -406,12 +406,12 @@ function extractAttributes(description) {
 }
 
 function toggleTheme() {
-    let theme = mainEditor.getTheme();
+    let theme = window.mainEditor.getTheme();
     let newTheme =
         theme === "ace/theme/monokai"
         ? "ace/theme/github"
         : "ace/theme/monokai";
-    mainEditor.setTheme(newTheme);
+    window.mainEditor.setTheme(newTheme);
     popupEditor.setTheme(newTheme);
 }
 
@@ -718,7 +718,7 @@ function handleNoContent() {
 }
 
 function regenerateTasks(keyword) {
-  const editorContent = mainEditor.getValue();
+  const editorContent = window.mainEditor.getValue();
   allTasks = parseYaml(editorContent);
 
   if (!keyword) {
@@ -997,7 +997,7 @@ function openModal() {
 function validateYaml() {
     let content = popupEditor.getValue();
     try {
-        addTaskToTop(popupEditor, mainEditor, content);
+        addTaskToTop(popupEditor, window.mainEditor, content);
         closeModal();
         document.getElementById("yaml-error").style.display = "none";
     } catch (e) {
