@@ -23,7 +23,6 @@ let allTasks = [];
 let SUCCESS_RATE = 0;
 let successRateHistory = [];
 let showFolders = true;
-const initialData = loadData();
 let popupEditor;
 let savedTasks = null;
 let searchTimeoutId;
