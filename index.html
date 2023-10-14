@@ -318,6 +318,8 @@
             });
         }
 
+        const initialData = loadData();
+
         // CONFIGURATION ON LOAD
         window.onload = function () {
             window.mainEditor = ace.edit("editor");
@@ -334,8 +336,6 @@
                 const content = mainEditor.getValue();
                 const tasks = generateTasks(content);
             });
-
-            const initialData = loadData();
 
             document.addEventListener("DOMContentLoaded", function () {
                 const landingPage = document.getElementById("landingPage");
