@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		  landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
 
 		if (intensity <= 0) {
-		  // Supprime l'élément de la page lorsque l'opacité atteint 0%
+		  // Supprime l'Ã©lÃ©ment de la page lorsque l'opacitÃ© atteint 0%
 		  landingPage.remove();
 		  mainEditor.gotoLine(0, Infinity, true);
 		  mainEditor.focus();
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   inputTask.addEventListener("keydown", function (e) {
     if (e.key === "Enter" || e.key === "Escape") {
-      // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
+      // Supprime l'Ã©lÃ©ment de la page lorsque l'utilisateur appuie sur EntrÃ©e
       mainEditor.focus();
       mainEditor.gotoLine(1, Infinity, true);
       landingPage.remove();
@@ -181,12 +181,12 @@ function showMoreButtons() {
     columnIds.forEach(columnId => updateLoadMoreButtonVisibility(columnId));
 }
 
-// Fonction pour déterminer le nombre de tâches à charger
+// Fonction pour dÃ©terminer le nombre de tÃ¢ches Ã  charger
 function getNumberToLoad(columnId, totalTasks, loadedTasks) {
   return Math.min(maxTasksPerColumn, totalTasks - loadedTasks);
 }
 
-// Fonction pour charger et mettre à jour les tâches
+// Fonction pour charger et mettre Ã  jour les tÃ¢ches
 function loadAndUpdateTasks(columnId, totalTasks, loadedTasks, tasks) {
   const tasksToLoad = totalTasks - loadedTasks;
   if (tasksToLoad > 0) {
@@ -213,7 +213,7 @@ function clearSearchTimeout() {
 function performSearch(keyword) {
   searchTimeoutId = setTimeout(() => {
     regenerateTasks(keyword);
-  }, 500); // Ajustez la durée du délai (en millisecondes) au besoin
+  }, 500); // Ajustez la durÃ©e du dÃ©lai (en millisecondes) au besoin
 }
 
 // VERY SHORT FONCTIONS
@@ -281,10 +281,10 @@ function updateTaskDelay(task, delayTimestamp) {
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex];
   
-    // Supprimer le délai existant, s'il en existe un
+    // Supprimer le dÃ©lai existant, s'il en existe un
     taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
   
-    // Ajouter le nouveau délai
+    // Ajouter le nouveau dÃ©lai
     lines[taskLineIndex] = `${taskLine} (delay=${parseInt(delayTimestamp)})`;
     mainEditor.session.doc.setValue(lines.join("\n"));
 }
@@ -295,10 +295,10 @@ function updateTaskAwait(task, awaitTimestamp) {
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex];
   
-    // Supprimer le délai existant, s'il en existe un
+    // Supprimer le dÃ©lai existant, s'il en existe un
     taskLine = taskLine.replace(/delay:(\s*\d+)?/g, '').trimEnd();
   
-    // Ajouter le nouveau délai
+    // Ajouter le nouveau dÃ©lai
     lines[taskLineIndex] = `${taskLine} (`+"delay"+`=${parseInt(awaitTimestamp)})`;
     mainEditor.session.doc.setValue(lines.join("\n"));
 }
@@ -528,20 +528,20 @@ function highlightTaskLine(task) {
   const editor = ace.edit('editor');
   const lineNumber = task.id - 1;
 
-  // Désélectionner toute sélection précédente
+  // DÃ©sÃ©lectionner toute sÃ©lection prÃ©cÃ©dente
   editor.selection.clearSelection();
 
-  // Mettre en évidence la ligne correspondante
+  // Mettre en Ã©vidence la ligne correspondante
   editor.selection.moveCursorToPosition({ row: lineNumber, column: 0 });
   editor.selection.selectLine();
 
-  // Faites défiler l'éditeur jusqu'à la ligne en surbrillance
+  // Faites dÃ©filer l'Ã©diteur jusqu'Ã  la ligne en surbrillance
   editor.scrollToLine(lineNumber, true, true, () => {});
   editor.focus();
 }
 
 
-// Fonction pour masquer le bouton "Charger plus" pour une colonne donnée
+// Fonction pour masquer le bouton "Charger plus" pour une colonne donnÃ©e
 function hideLoadMoreButton(columnId) {
   const loadMoreButton = document.getElementById(`loadMore${columnId.charAt(0).toUpperCase() + columnId.slice(1)}`);
   if (loadMoreButton) {
@@ -549,7 +549,7 @@ function hideLoadMoreButton(columnId) {
   }
 }
 
-// Fonction principale pour charger plus de tâches
+// Fonction principale pour charger plus de tÃ¢ches
 function loadMoreTasks(columnId) {
   const totalTasks = getTotalTasksForColumn(columnId);
   const loadedTasks = getLoadedTasksForColumn(columnId);
@@ -557,7 +557,7 @@ function loadMoreTasks(columnId) {
   updateLoadMoreButtonVisibility(columnId);
 }
 
-// Fonction pour ajouter des tâches à une colonne
+// Fonction pour ajouter des tÃ¢ches Ã  une colonne
 function addTasksToColumn(columnId, tasksToAdd) {
   const column = document.getElementById(columnId);
   for (const task of tasksToAdd) {
@@ -568,7 +568,7 @@ function addTasksToColumn(columnId, tasksToAdd) {
 
 // MEDIUM FONCTIONS
 
-// Fonction pour obtenir la liste de tâches pour une colonne donnée
+// Fonction pour obtenir la liste de tÃ¢ches pour une colonne donnÃ©e
 function getTasksForColumn(columnId) {
   switch (columnId) {
     case 'inbox':
@@ -638,7 +638,7 @@ function generateTasks(editorContent) {
     projects = parseProjects(editorContent);
     updateViewer(tasks);
   } catch (e) {
-    console.error("Erreur lors du chargement du contenu de l'éditeur :", e);
+    console.error("Erreur lors du chargement du contenu de l'Ã©diteur :", e);
     return [];
   }
 
@@ -712,7 +712,7 @@ function filterTasksBySingleKeyword(tasks, keyword) {
   }
 }
 
-// Fonction pour obtenir le nombre total de tâches pour une colonne donnée
+// Fonction pour obtenir le nombre total de tÃ¢ches pour une colonne donnÃ©e
 function getTotalTasksForColumn(columnId) {
   switch (columnId) {
     case 'inbox':
@@ -732,7 +732,7 @@ function getTotalTasksForColumn(columnId) {
   }
 }
 
-// Fonction pour obtenir le nombre de tâches chargées pour une colonne donnée
+// Fonction pour obtenir le nombre de tÃ¢ches chargÃ©es pour une colonne donnÃ©e
 function getLoadedTasksForColumn(columnId) {
   switch (columnId) {
     case 'inbox':
@@ -763,11 +763,11 @@ function updateTaskContext(tasks) {
   });
 }
 
-// Fonction pour gérer le cas où il n'y a plus de tâches à charger
+// Fonction pour gÃ©rer le cas oÃ¹ il n'y a plus de tÃ¢ches Ã  charger
 function handleNoMoreTasksToLoad(columnId, totalTasks, loadedTasks) {
   const numberToLoad = getNumberToLoad(columnId, totalTasks, loadedTasks);
   if (numberToLoad === 0) {
-    loadedTasks = 0; // Réinitialisation des tâches chargées
+    loadedTasks = 0; // RÃ©initialisation des tÃ¢ches chargÃ©es
     return getNumberToLoad(columnId, totalTasks, loadedTasks);
   }
   return numberToLoad;
@@ -811,27 +811,27 @@ function filterTasksByKeyword(keyword) {
 function cleanUpDescription(content) {
   content = content.trim();
 
-  // Supprimer les attributs entre parenthèses
+  // Supprimer les attributs entre parenthÃ¨ses
   content = content.replace(/\([^()]+\)/g, '');
 
-  // Retirer les bullet points de liste du début de la phrase
+  // Retirer les bullet points de liste du dÃ©but de la phrase
   content = content.replace(/^\s*[-*]*\s*/, '');
 
-  // Retirer les ":" résiduels à la fin de la description
+  // Retirer les ":" rÃ©siduels Ã  la fin de la description
   content = content.replace(/:\s*$/, '');
 
   // Retirer les symboles "--", "x-", "*-", "+-", et "&+"
   content = content.replace(/(-|x|\*|\+|&)-$/g, '');
 
-  // Mettre en majuscule la première lettre de la description
+  // Mettre en majuscule la premiÃ¨re lettre de la description
   content = content.charAt(0).toUpperCase() + content.slice(1);
 
-  // Mettre en majuscule tout caractère après un signe de ponctuation demandant une majuscule
+  // Mettre en majuscule tout caractÃ¨re aprÃ¨s un signe de ponctuation demandant une majuscule
   content = content.replace(/([.!?])\s*(\w)/g, (match, punctuation, letter) => {
     return punctuation + ' ' + letter.toUpperCase();
   });
 
-  return content.trim(); // Supprimer les espaces supplémentaires en début et fin de la description
+  return content.trim(); // Supprimer les espaces supplÃ©mentaires en dÃ©but et fin de la description
 }
 
 function formatTime(milliseconds) {
@@ -961,7 +961,7 @@ function updateLoadMoreButtonVisibility(columnId) {
 
 function createTaskElement(task) {
 
-  // Vérifier si la description de la tâche est vide ou composée uniquement d'espaces
+  // VÃ©rifier si la description de la tÃ¢che est vide ou composÃ©e uniquement d'espaces
   if (!task.description || task.description.trim() === '') {
     return null;
   }
@@ -998,7 +998,7 @@ function createTaskTextElement(task) {
   const delayText = document.createElement("div");
   delayText.style.display = "flex";
   
-  // Ajoute le timestamp du délai s'il existe, se transforme en deadline
+  // Ajoute le timestamp du dÃ©lai s'il existe, se transforme en deadline
   if (task.delay) {
     delayText.textContent = `[${formatTimestamp(parseInt(task.delay,10))}]`;
     delayText.style.color = "grey";
@@ -1069,20 +1069,20 @@ function validateYaml() {
     }
 }
 
-// Assurez-vous que Ace est chargé avant d'appeler cette fonction.
+// Assurez-vous que Ace est chargÃ© avant d'appeler cette fonction.
 function addAndRemoveLine() {
-  const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'élément contenant votre éditeur Ace
+  const mainEditor = ace.edit('editor'); // Remplacez 'mainEditor' par l'ID de l'Ã©lÃ©ment contenant votre Ã©diteur Ace
   const session = mainEditor.getSession();
   const linesCount = session.getLength();
   
-  // Ajouter une nouvelle ligne à la fin
+  // Ajouter une nouvelle ligne Ã  la fin
   session.insert({ row: linesCount, column: 0 }, '\n');
   
-  // Supprimer la nouvelle ligne après un certain temps
+  // Supprimer la nouvelle ligne aprÃ¨s un certain temps
   setTimeout(() => {
     const newLinesCount = session.getLength();
     session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 } });
-  }, 1); // Le délai avant de supprimer la ligne. Ici, il est défini sur 3000 millisecondes (3 secondes).
+  }, 1); // Le dÃ©lai avant de supprimer la ligne. Ici, il est dÃ©fini sur 3000 millisecondes (3 secondes).
 }
 
 function restoreTasks() {
@@ -1100,36 +1100,36 @@ function restoreTasks() {
   }
 }
 
-// Fonction pour mettre à jour l'éditeur
+// Fonction pour mettre Ã  jour l'Ã©diteur
 function updateEditor() {
   const editor = ace.edit("editor");
   const session = editor.getSession();
   const cursor = editor.selection.getCursor();
 
-  // Récupérer la ligne actuelle
+  // RÃ©cupÃ©rer la ligne actuelle
   const currentRow = cursor.row;
   const currentLine = session.getLine(currentRow);
 
-  // Vérifier si la ligne est une tâche de plus de 1 caractère
+  // VÃ©rifier si la ligne est une tÃ¢che de plus de 1 caractÃ¨re
   if (currentLine.trim().length >= 1) {
-    const indent = currentLine.match(/^\s*/)[0]; // Récupérer l'indentation de la ligne
+    const indent = currentLine.match(/^\s*/)[0]; // RÃ©cupÃ©rer l'indentation de la ligne
 
-    // Vérifier si la ligne commence déjà par "(ctime="
+    // VÃ©rifier si la ligne commence dÃ©jÃ  par "(ctime="
     if (!currentLine.trim().startsWith("(ctime=")) {
-      // Insérer "(ctime=__timestamp__) " au début de la ligne
+      // InsÃ©rer "(ctime=__timestamp__) " au dÃ©but de la ligne
       const newTimestamp = `(ctime=${new Date().getTime()}) `;
       const updatedLine = `${indent}${newTimestamp}${currentLine.trim()}`;
 
-      // Récupérer la position actuelle du curseur
+      // RÃ©cupÃ©rer la position actuelle du curseur
       const currentColumn = cursor.column;
 
-      // Insérer le texte mis à jour dans l'éditeur
+      // InsÃ©rer le texte mis Ã  jour dans l'Ã©diteur
       session.replace({ start: { row: currentRow, column: 0 }, end: { row: currentRow, column: currentLine.length } }, updatedLine);
 
       // Calculer la nouvelle position du curseur
       const newColumn = currentColumn + newTimestamp.length;
 
-      // Déplacer le curseur à la nouvelle position
+      // DÃ©placer le curseur Ã  la nouvelle position
       editor.selection.moveCursorTo(currentRow, newColumn, true);
     }
   }
@@ -1153,7 +1153,7 @@ function updateViewer(tasks) {
   delayTasks = [];
   inboxTasks = [];
   tasks.forEach((task, index) => {
-    let taskWithTab = { ...task, originalIndex: index }; // Ajoutez l'index d'origine à chaque tâche
+    let taskWithTab = { ...task, originalIndex: index }; // Ajoutez l'index d'origine Ã  chaque tÃ¢che
     if (task.is_project) {
       taskWithTab.tab = 'project';
     } else {
@@ -1225,7 +1225,7 @@ function updateViewer(tasks) {
   });
   let totalNonProjectTasks = doneTasks.length + docTasks.length + awaitTasks.length + cancelTasks.length + delayTasks.length;
   let totalTasks = tasks.filter(task => !task.is_project).length;
-  if (totalTasks > 0) { // Évite la division par zéro
+  if (totalTasks > 0) { // Ã‰vite la division par zÃ©ro
      let successRate = (totalNonProjectTasks / totalTasks) * 100;
      let now = Date.now();
      successRateHistory.push({ rate: successRate, time: now });
@@ -1341,7 +1341,7 @@ function openPopup(title, task) {
   dateInput.type = "date";
   dateInput.id = "dateInput";
   dateInput.addEventListener("click", handleDateInputClick);
-  dateInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
+  dateInput.addEventListener("change", handleInputChange); // Ajoute cet Ã©couteur d'Ã©vÃ©nements
 
   const durationInput = document.createElement("input");
   durationInput.type = "number";
@@ -1349,7 +1349,7 @@ function openPopup(title, task) {
   durationInput.value = 120;
   durationInput.placeholder = "Duration (in minutes)";
   durationInput.addEventListener("click", handleDurationInputClick);
-  durationInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
+  durationInput.addEventListener("change", handleInputChange); // Ajoute cet Ã©couteur d'Ã©vÃ©nements
 
   const cancelButton = createButton('Cancel', 'red', closePopup)
   cancelButton.classList.add("cancel-button");
@@ -1360,7 +1360,7 @@ function openPopup(title, task) {
   delayButton.textContent = title;
   delayButton.id = "delayButton"
   delayButton.dataset.task_id = task.id
-  delayButton.disabled = false; // Désactive le bouton par défaut
+  delayButton.disabled = false; // DÃ©sactive le bouton par dÃ©faut
   
   const inputContainer = document.createElement("div");
   inputContainer.classList.add("input-container");
@@ -1383,7 +1383,7 @@ function openPopup(title, task) {
 
 
 
-// Fonction pour remplacer les caractères accentués par leurs équivalents non accentués
+// Fonction pour remplacer les caractÃ¨res accentuÃ©s par leurs Ã©quivalents non accentuÃ©s
 function removeAccents(str) {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
@@ -1391,7 +1391,7 @@ function removeAccents(str) {
 
 
 
-// Gérer le clic sur le bouton d'export
+// GÃ©rer le clic sur le bouton d'export
 document.getElementById('exportExcelButton').addEventListener('click', () => {
   exportToExcel(allTasks);
 });
@@ -1399,7 +1399,7 @@ document.getElementById('exportExcelButton').addEventListener('click', () => {
 // Fonction pour convertir un timestamp en date lisible
 function formatDateFromTimestamp(timestamp) {
     const date = new Date(Math.floor(timestamp / 1 )); // Convertir le timestamp en date 
-    const formattedDate = date.toLocaleString(); // Formater la date en une chaîne lisible
+    const formattedDate = date.toLocaleString(); // Formater la date en une chaÃ®ne lisible
     console.log(formattedDate)
   return formattedDate;
 }
@@ -1425,7 +1425,7 @@ async function calculateProjectProgressAsync(projectName) {
     const completedTasksCount = actionableTasks.filter((task) => task.status === '--').length;
     const percentage = (completedTasksCount / (actionableTasks.length || 1)) * 100;
 
-    //console.log(`Nombre de tâches terminées pour le projet ${projectName}: ${completedTasksCount}`);
+    //console.log(`Nombre de tÃ¢ches terminÃ©es pour le projet ${projectName}: ${completedTasksCount}`);
     //console.log(`Pourcentage d'avancement pour le projet ${projectName}: ${percentage.toFixed(2)}%`);
 
     return `${percentage.toFixed(2)}%`;
@@ -1495,7 +1495,7 @@ function exportToExcel(tasks) {
                         pattern: 'solid',
                         fgColor: { argb: backgroundColor },
                     };
-                    // Activer le retour à la ligne automatique
+                    // Activer le retour Ã  la ligne automatique
                     cell.alignment = { wrapText: true };
                 });
             });
@@ -1506,6 +1506,7 @@ function exportToExcel(tasks) {
                 { header: 'Contexte', key: 'context', width: 75 },
                 { header: 'Etat', key: 'status', width: 15 },
                 { header: 'Started by', key: 'ctime', width: 25 },
+                { header: 'End by', key: 'delay', width: 25 },
             ];
             worksheet.columns = headers;
 
@@ -1514,6 +1515,9 @@ function exportToExcel(tasks) {
 
             // Style the header of the 'Started by' column with right alignment
             worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
+
+            // Style the header of the 'End by' column with right alignment
+            worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
 
             worksheet.getRow(1).eachCell((cell) => {
                 cell.fill = {
@@ -1532,6 +1536,7 @@ function exportToExcel(tasks) {
                         context: removeAccents(task.clean_context) || '',
                         status: removeAccents(task.tab) || '',
                         ctime: task.attributes && task.attributes.ctime ? formatDateFromTimestamp(task.attributes.ctime) : '',
+                        delay: task.delay ? formatDateFromTimestamp(task.delay) : '',
                     });
 
                     const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
@@ -1542,7 +1547,7 @@ function exportToExcel(tasks) {
                             fgColor: { argb: backgroundColor },
                         };
 
-                        // Activer le retour à la ligne automatique
+                        // Activer le retour Ã  la ligne automatique
                         cell.alignment = { wrapText: true };
 
                         // For the 'Etat' column, set center alignment for values and apply data validation
@@ -1560,6 +1565,10 @@ function exportToExcel(tasks) {
 
                         // For the 'Started by' column, set right alignment for values
                         if (cell.address.includes('D')) {
+                            cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                        }
+
+                        if (cell.address.includes('E')) {
                             cell.alignment = { horizontal: 'right', vertical: 'middle' };
                         }
 
