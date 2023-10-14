@@ -1502,9 +1502,9 @@ function exportToExcel(tasks) {
 
             const worksheet = workbook.addWorksheet('Taches');
             const headers = [
-                { header: 'Action', key: 'task', width: 50 },
-                { header: 'Contexte', key: 'context', width: 75 },
-                { header: 'Etat', key: 'status', width: 15 },
+                { header: 'Action', key: 'task', width: 40 },
+                { header: 'Contexte', key: 'context', width: 65 },
+                { header: 'Etat', key: 'status', width: 10 },
                 { header: 'Started by', key: 'ctime', width: 25 },
                 { header: 'End by', key: 'delay', width: 25 },
             ];
@@ -1555,12 +1555,12 @@ function exportToExcel(tasks) {
                             cell.alignment = { horizontal: 'center', vertical: 'middle' };
 
                             // Configure data validation with the list from the 'Parametre' worksheet
-                            // cell.dataValidation = {
-                            //     type: 'list',
-                            //     formulae: ['"inbox,done,doc,await,delay,cancel"'],
-                            //     allowBlank: true,
-                                //showDropDown: true,
-                            // };
+                            cell.dataValidation = {
+                                 type: 'list',
+                                 formulae: ['"inbox,done,doc,await,delay,cancel"'],
+                                 //allowBlank: true,
+                                 showDropDown: true,
+                            };
                         }
 
                         // For the 'Started by' column, set right alignment for values
