@@ -318,10 +318,10 @@
         }
 
         const initialData = loadData();
+        window.mainEditor = ace.edit("editor");
 
         // CONFIGURATION ON LOAD
         window.onload = function () {
-            window.mainEditor = ace.edit("editor");
             ace.require(['ace/ace'], function (ace) {
                 addAndRemoveLine();
             });
