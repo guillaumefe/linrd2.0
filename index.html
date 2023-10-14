@@ -237,10 +237,10 @@
             </div>
         </div>
     </div>
-    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
         // Importez d'autres modules Firebase au besoin.
         import { getDatabase, ref, onValue, child, get } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
@@ -256,121 +256,212 @@
         };
 
         // Initialisez Firebase
-        const app = initializeApp(firebaseConfig);
+        // const app = initializeApp(firebaseConfig);
 
         // Récupérez le bouton de connexion Google
-        const googleSignInButton = document.getElementById('googleSignInButton');
+        //const googleSignInButton = document.getElementById('googleSignInButton');
 
         // Obtenez une instance d'authentification
-        const auth = getAuth(app);
+        //const auth = getAuth(app);
 
-        // Créez un fournisseur Google
-        const provider = new GoogleAuthProvider();
+        function handleAuthState() {
+            // Configurez Firebase et obtenez l'instance auth
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
 
-        // Ajoutez un gestionnaire d'événements pour le bouton de connexion
-        googleSignInButton.addEventListener('click', () => {
+            const googleSignInButton = document.getElementById('googleSignInButton');
+
             if (auth.currentUser) {
-                // Si l'utilisateur est déjà connecté, effectuez la déconnexion
-                signOut(auth)
-                    .then(() => {
-                        console.log("Utilisateur déconnecté");
-                        googleSignInButton.textContent = "Se connecter avec Google"; // Mettez à jour le texte du bouton
-                    })
-                    .catch((error) => {
-                        console.error("Erreur de déconnexion : ", error);
-                    });
+                // L'utilisateur est déjà connecté, mettez à jour le bouton en conséquence
+                googleSignInButton.textContent = "Déconnecter"; // Mettez à jour le texte du bouton
             } else {
-                // Si l'utilisateur n'est pas encore connecté, effectuez la connexion avec Google
-                signInWithPopup(auth, provider)
-                    .then((result) => {
-                        // L'utilisateur est connecté avec succès
-                        const user = result.user;
-                        console.log("Utilisateur connecté avec succès: ", user);
-                        googleSignInButton.textContent = "Déconnecter"; // Mettez à jour le texte du bouton
-                    })
-                    .catch((error) => {
-                        // Une erreur s'est produite lors de la connexion
-                        console.error("Erreur de connexion Google: ", error);
-                    });
+                googleSignInButton.textContent = "Se connecter avec Google"; // Mettez à jour le texte du bouton
             }
-        });
 
+            // Activez la persistance de la session utilisateur
+            setPersistence(auth, browserSessionPersistence)
+                .then(() => {
+                    // La persistance de la session utilisateur a été activée avec succès
+                    console.log("Persistance de la session utilisateur activée.");
+                })
+                .catch((error) => {
+                    // Une erreur s'est produite lors de l'activation de la persistance
+                    console.error("Erreur lors de l'activation de la persistance de la session utilisateur : ", error);
+                });
 
-        // Sauvegarde les données dans Firebase Realtime Database
-        function saveData(data, userId) {
-            const database = getDatabase();
-            const editorRef = ref(database, `editors/${userId}`);
-            set(editorRef, data);
-        }
+            // Créez un fournisseur Google
+            const provider = new GoogleAuthProvider();
 
-        // Charge les données depuis Firebase Realtime Database
-        function loadData(userId, callback) {
-            const database = getDatabase();
-            const editorRef = ref(database, `editors/${userId}`);
-            onValue(editorRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    let tasks = Object.values(data);
-                    let descriptions = tasks.map((task) => task.description).join("\n");
-                    callback(descriptions);
+            // Ajoutez un gestionnaire d'événements pour le bouton de connexion
+            googleSignInButton.addEventListener('click', () => {
+                if (auth.currentUser) {
+                    // Si l'utilisateur est déjà connecté, effectuez la déconnexion
+                    signOut(auth)
+                        .then(() => {
+                            console.log("Utilisateur déconnecté");
+                            googleSignInButton.textContent = "Se connecter avec Google"; // Mettez à jour le texte du bouton
+                        })
+                        .catch((error) => {
+                            console.error("Erreur de déconnexion : ", error);
+                        });
+                } else {
+                    // Si l'utilisateur n'est pas encore connecté, effectuez la connexion avec Google
+                    signInWithPopup(auth, provider)
+                        .then((result) => {
+                            // L'utilisateur est connecté avec succès
+                            const user = result.user;
+                            console.log("Utilisateur connecté avec succès: ", user);
+                            googleSignInButton.textContent = "Déconnecter"; // Mettez à jour le texte du bouton
+                        })
+                        .catch((error) => {
+                            // Une erreur s'est produite lors de la connexion
+                            console.error("Erreur de connexion Google: ", error);
+                        });
                 }
             });
         }
 
-        const initialData = loadData();
-        window.mainEditor = ace.edit("editor");
+        // Vérifiez l'état de l'authentification lors du chargement de la page
+        handleAuthState();
 
-        // CONFIGURATION ON LOAD
+        // Fonction pour sauvegarder les données
+        function saveData(data, userId) {
+            // Vérifier si l'utilisateur est connecté avec Google
+            const auth = getAuth();
+            if (auth.currentUser) {
+                // L'utilisateur est connecté avec Google, sauvegarde les données dans Firebase Realtime Database
+                const database = getDatabase();
+                const editorRef = ref(database, `editors/${userId}`);
+                set(editorRef, data);
+            } else {
+                // L'utilisateur n'est pas connecté, sauvegarde les données dans localStorage
+                localStorage.setItem('editor', JSON.stringify(data));
+            }
+        }
+
+        // Fonction pour charger les données
+        function loadData(userId) {
+            // Vérifier si l'utilisateur est connecté avec Google
+            const auth = getAuth();
+
+            if (auth.currentUser) {
+                // L'utilisateur est connecté avec Google, charge les données depuis Firebase Realtime Database
+                const database = getDatabase();
+                const editorRef = ref(database, `editors/${userId}`);
+                onValue(editorRef, (snapshot) => {
+                    const data = snapshot.val();
+                    return data
+                });
+            } else {
+                // L'utilisateur n'est pas connecté, charge les données depuis localStorage
+                const data = localStorage.getItem("editor");
+                const tasks = data ? JSON.parse(data) : [];
+                let descriptions = tasks.map((task) => task.description).join("\n");
+                return descriptions;
+            }
+        }
+
+        function regenerateTasks(keyword) {
+            const editorContent = mainEditor.getValue();
+            allTasks = parseYaml(editorContent);
+
+            if (!keyword) {
+                updateViewer(allTasks);
+                showMoreButtons();
+            } else {
+                filterTasksByKeyword(keyword);
+            }
+        }
+
+        function handleNoContent() {
+            saveData([]);
+            updateTab("inbox", []);
+            updateViewer([]);
+            return [];
+        }
+
+        function generateTasks(editorContent) {
+            if (!editorContent) {
+                return handleNoContent();
+            }
+
+            let tasks;
+            let projects;
+
+            try {
+                tasks = parseYaml(editorContent);
+                projects = parseProjects(editorContent);
+                updateViewer(tasks);
+            } catch (e) {
+                console.error("Erreur lors du chargement du contenu de l'éditeur :", e);
+                return [];
+            }
+
+            saveData(tasks);
+
+            const delayTasks = filterDelayTasks(tasks);
+            return transformTasks(delayTasks, projects);
+        }
+
+        const mainEditor = ace.edit("editor");
+
+
         window.onload = function () {
+
+            const initialData = loadData();
+
             ace.require(['ace/ace'], function (ace) {
                 addAndRemoveLine();
             });
             regenerateTasks()
 
             // CONFIGURATION BEFORE
-            window.mainEditor.session.on("change", updateEditor);
-            window.mainEditor.session.insert({ row: 0, column: 0 }, initialData);
-            window.mainEditor.session.on("change", () => {
-                const content = window.mainEditor.getValue();
+            mainEditor.session.on("change", updateEditor);
+
+            mainEditor.session.insert({ row: 0, column: 0 }, initialData);
+            mainEditor.session.on("change", () => {
+                const content = mainEditor.getValue();
                 generateTasks(content);
             });
 
-            document.addEventListener("DOMContentLoaded", function () {
-                const landingPage = document.getElementById("landingPage");
-                const inputTask = document.getElementById("inputTask");
-                if (initialData) {
-                    landingPage.style.display = "none";
-                }
-                inputTask.addEventListener("input", function () {
-                    const inputLength = inputTask.value.length;
+            //document.addEventListener("DOMContentLoaded", function () {
+            const landingPage = document.getElementById("landingPage");
+            const inputTask = document.getElementById("inputTask");
+            if (initialData) {
+                landingPage.style.display = "none";
+            }
+            inputTask.addEventListener("input", function () {
+                const inputLength = inputTask.value.length;
 
-                    if (inputLength >= 0) {
-                        const intensity = 1 - (inputLength - 1) * 0.05;
-                        landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
+                if (inputLength >= 0) {
+                    const intensity = 1 - (inputLength - 1) * 0.05;
+                    landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
 
-                        if (intensity <= 0) {
-                            // Supprime l'élément de la page lorsque l'opacité atteint 0%
-                            landingPage.remove();
-                            window.mainEditor.gotoLine(0, Infinity, true);
-                            window.mainEditor.focus();
-                        }
-                    }
-                    const firstLineRange = window.mainEditor.session.getLine(0).length;
-                    window.mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
-                });
-                inputTask.addEventListener("keydown", function (e) {
-                    if (e.key === "Enter" || e.key === "Escape") {
-                        // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
-                        window.mainEditor.focus();
-                        window.mainEditor.gotoLine(1, Infinity, true);
+                    if (intensity <= 0) {
+                        // Supprime l'élément de la page lorsque l'opacité atteint 0%
                         landingPage.remove();
+                        mainEditor.gotoLine(0, Infinity, true);
+                        mainEditor.focus();
                     }
-                });
+                }
+                const firstLineRange = mainEditor.session.getLine(0).length;
+                mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
             });
+            inputTask.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === "Escape") {
+                    // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
+                    mainEditor.focus();
+                    mainEditor.gotoLine(1, Infinity, true);
+                    landingPage.remove();
+                }
+            });
+            //});
 
         };
 
     </script>
+
     <script src="index.js"></script>
+
 </body>
 </html>
