@@ -39,39 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
   onglet.dispatchEvent(event);
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  const landingPage = document.getElementById("landingPage");
-  const inputTask = document.getElementById("inputTask");
-  if (initialData) {
-    landingPage.style.display = "none";
-  }
-  inputTask.addEventListener("input", function () {
-		const inputLength = inputTask.value.length;
-
-		if (inputLength >= 0) {
-		  const intensity = 1 - (inputLength - 1) * 0.05;
-		  landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
-
-		if (intensity <= 0) {
-		  // Supprime l'élément de la page lorsque l'opacité atteint 0%
-		  landingPage.remove();
-		  mainEditor.gotoLine(0, Infinity, true);
-		  mainEditor.focus();
-		}
-    }
-    const firstLineRange = mainEditor.session.getLine(0).length;
-    mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
-  });
-  inputTask.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.key === "Escape") {
-      // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
-      mainEditor.focus();
-      mainEditor.gotoLine(1, Infinity, true);
-      landingPage.remove();
-    }
-  });
-});
-
 searchField.addEventListener('keyup', function() {
   filterTasks(this.value);
 });
