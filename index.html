@@ -320,7 +320,8 @@
 
         // CONFIGURATION ON LOAD
         window.onload = function () {
-            let mainEditor = ace.edit("editor");
+            window.mainEditor = ace.edit("editor");
+            let mainEditor = window.mainEditor
             ace.require(['ace/ace'], function (ace) {
                 addAndRemoveLine();
             });
