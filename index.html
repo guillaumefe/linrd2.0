@@ -242,7 +242,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
         // Importez d'autres modules Firebase au besoin.
-        import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+        import { getDatabase, ref, onValue, child, get } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
         // Configurez votre application Firebase
         const firebaseConfig = {
