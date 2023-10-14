@@ -43,7 +43,7 @@ window.onload = function() {
   ace.require(['ace/ace'], function(ace) {
     addAndRemoveLine();
   });
-  regenerateTasks()
+    regenerateTasks()
 };
 
 // EVENT LISTENERS
@@ -1505,18 +1505,18 @@ function exportToExcel(tasks) {
                 { header: 'Action', key: 'task', width: 40 },
                 { header: 'Contexte', key: 'context', width: 65 },
                 { header: 'Etat', key: 'status', width: 10 },
-                { header: 'Started by', key: 'ctime', width: 25 },
-                { header: 'End by', key: 'delay', width: 25 },
+                { header: 'Creation Time', key: 'ctime', width: 25 },
+                { header: 'Next Tick', key: 'delay', width: 25 },
             ];
             worksheet.columns = headers;
 
             // Style the header of the 'Etat' column with center alignment
             worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
 
-            // Style the header of the 'Started by' column with right alignment
+            // Style the header of the 'Creation Time' column with right alignment
             worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
 
-            // Style the header of the 'End by' column with right alignment
+            // Style the header of the 'Next Tick' column with right alignment
             worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
 
             worksheet.getRow(1).eachCell((cell) => {
