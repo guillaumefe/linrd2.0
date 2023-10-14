@@ -219,29 +219,6 @@ function initPopupEditor() {
     popupEditor.setTheme("ace/theme/github");
     popupEditor.session.setMode("ace/mode/yaml");
 }
-
-
-// Sauvegarde les données dans Firebase Realtime Database
-function saveData(data, userId) {
-    const database = getDatabase();
-    const editorRef = ref(database, `editors/${userId}`);
-    set(editorRef, data);
-}
-
-// Charge les données depuis Firebase Realtime Database
-function loadData(userId, callback) {
-    const database = getDatabase();
-    const editorRef = ref(database, `editors/${userId}`);
-    onValue(editorRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            let tasks = Object.values(data);
-            let descriptions = tasks.map((task) => task.description).join("\n");
-            callback(descriptions);
-        }
-    });
-}
-
   
 function getParentTask(indent, contextStack) {
   for (let i = contextStack.length - 1; i >= 0; i--) {
