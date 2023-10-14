@@ -240,9 +240,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
         // Importez d'autres modules Firebase au besoin.
-        import { getDatabase, ref, onValue, child, get } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, child, get } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
         // Configurez votre application Firebase
         const firebaseConfig = {
@@ -264,30 +264,12 @@
         // Obtenez une instance d'authentification
         //const auth = getAuth(app);
 
+        // Configurez Firebase et obtenez l'instance auth
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleSignInButton = document.getElementById('googleSignInButton');
+
         function handleAuthState() {
-            // Configurez Firebase et obtenez l'instance auth
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-
-            const googleSignInButton = document.getElementById('googleSignInButton');
-
-            if (auth.currentUser) {
-                // L'utilisateur est déjà connecté, mettez à jour le bouton en conséquence
-                googleSignInButton.textContent = "Déconnecter"; // Mettez à jour le texte du bouton
-            } else {
-                googleSignInButton.textContent = "Se connecter avec Google"; // Mettez à jour le texte du bouton
-            }
-
-            // Activez la persistance de la session utilisateur
-            setPersistence(auth, browserSessionPersistence)
-                .then(() => {
-                    // La persistance de la session utilisateur a été activée avec succès
-                    console.log("Persistance de la session utilisateur activée.");
-                })
-                .catch((error) => {
-                    // Une erreur s'est produite lors de l'activation de la persistance
-                    console.error("Erreur lors de l'activation de la persistance de la session utilisateur : ", error);
-                });
 
             // Créez un fournisseur Google
             const provider = new GoogleAuthProvider();
@@ -300,6 +282,7 @@
                         .then(() => {
                             console.log("Utilisateur déconnecté");
                             googleSignInButton.textContent = "Se connecter avec Google"; // Mettez à jour le texte du bouton
+                            localStorage.setItem("userLoggedIn", false)
                         })
                         .catch((error) => {
                             console.error("Erreur de déconnexion : ", error);
@@ -312,49 +295,56 @@
                             const user = result.user;
                             console.log("Utilisateur connecté avec succès: ", user);
                             googleSignInButton.textContent = "Déconnecter"; // Mettez à jour le texte du bouton
+                            localStorage.setItem("userLoggedIn", true)
                         })
                         .catch((error) => {
                             // Une erreur s'est produite lors de la connexion
                             console.error("Erreur de connexion Google: ", error);
+                            localStorage.setItem("userLoggedIn", false)
                         });
                 }
             });
+
+            if (localStorage.getItem("userLoggedIn") === "true") {
+                // L'utilisateur est déjà connecté, rétablissez sa session
+                // Vous devrez également gérer la persistance des sessions de Firebase avec Firebase Auth
+                googleSignInButton.textContent = "Déconnecter"; // Mettez à jour le texte du bouton
+            } else {
+                // L'utilisateur n'est pas connecté, assurez-vous que sa session Firebase Auth est également fermée
+                googleSignInButton.textContent = "Se connecter avec Google"; // Mettez à jour le texte du bouton
+            }
         }
 
-        // Vérifiez l'état de l'authentification lors du chargement de la page
-        handleAuthState();
-
         // Fonction pour sauvegarder les données
-        function saveData(data, userId) {
+        function saveData(data) {
             // Vérifier si l'utilisateur est connecté avec Google
             const auth = getAuth();
             if (auth.currentUser) {
                 // L'utilisateur est connecté avec Google, sauvegarde les données dans Firebase Realtime Database
                 const database = getDatabase();
-                const editorRef = ref(database, `editors/${userId}`);
+                const editorRef = ref(database, `linrd/${auth.currentUser.uid}`);
                 set(editorRef, data);
             } else {
                 // L'utilisateur n'est pas connecté, sauvegarde les données dans localStorage
-                localStorage.setItem('editor', JSON.stringify(data));
+                localStorage.setItem('linrd', JSON.stringify(data));
             }
         }
 
         // Fonction pour charger les données
-        function loadData(userId) {
+        function loadData() {
             // Vérifier si l'utilisateur est connecté avec Google
             const auth = getAuth();
-
             if (auth.currentUser) {
                 // L'utilisateur est connecté avec Google, charge les données depuis Firebase Realtime Database
                 const database = getDatabase();
-                const editorRef = ref(database, `editors/${userId}`);
+                const editorRef = ref(database, `linrd/${auth.currentUser.uid}`);
                 onValue(editorRef, (snapshot) => {
                     const data = snapshot.val();
                     return data
                 });
             } else {
                 // L'utilisateur n'est pas connecté, charge les données depuis localStorage
-                const data = localStorage.getItem("editor");
+                const data = localStorage.getItem("linrd");
                 const tasks = data ? JSON.parse(data) : [];
                 let descriptions = tasks.map((task) => task.description).join("\n");
                 return descriptions;
@@ -409,6 +399,9 @@
         window.onload = function () {
 
             const initialData = loadData();
+
+            // Vérifiez l'état de l'authentification lors du chargement de la page
+            handleAuthState();
 
             ace.require(['ace/ace'], function (ace) {
                 addAndRemoveLine();
