@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -13,6 +13,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Ajoutez ces lignes à votre en-tête HTML -->
+    <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
@@ -48,21 +50,21 @@
                     </a>
 
                     <!--div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                      <button
-                        class="dropdown-item"
-                        id="debugToggleButton"
-                        onclick="toggleDebugMode()!broken"
-                        Activer/désasctiver le mode debug
-                      </button-->
+                  <button
+                    class="dropdown-item"
+                    id="debugToggleButton"
+                    onclick="toggleDebugMode()!broken"
+                    Activer/désasctiver le mode debug
+                  </button-->
                     <!-- Ajoutez ce bouton pour basculer entre les tâches et les dossiers -->
                     <!--button
-                        class="dropdown-item"
-                        id="toggleTasksAndFolders"
-                        onclick="toggleProjects()"
-                      >
-                        Basculer entre tâches et projets
-                      </button>
-                    </div-->
+                    class="dropdown-item"
+                    id="toggleTasksAndFolders"
+                    onclick="toggleProjects()"
+                  >
+                    Basculer entre tâches et projets
+                  </button>
+                </div-->
 
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <button class="dropdown-item"
@@ -87,6 +89,11 @@
                 </li>
             </ul>
         </div>
+
+        <div class="right-container">
+            <button id="googleSignInButton">Se connecter avec Google</button>
+        </div>
+
     </nav>
     <div class="wrapper">
         <div id="editor" class="sidebar"></div>
@@ -232,5 +239,47 @@
         </div>
     </div>
     <script src="index.js"></script>
+    <script type="module">
+
+            // Import the functions you need from the SDKs you need
+            import {initializeApp} from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+            import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-analytics.js";
+            import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+            // TODO: Add SDKs for Firebase products that you want to use
+            // https://firebase.google.com/docs/web/setup#available-libraries
+
+            // Your web app's Firebase configuration
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyDnqsdwUzPfAt5TbgOkO0mtsWS16AU9jFA",
+                authDomain: "linrd2.firebaseapp.com",
+                projectId: "linrd2",
+                storageBucket: "linrd2.appspot.com",
+                messagingSenderId: "58770893517",
+                appId: "1:58770893517:web:c5385764c5046554391784",
+                measurementId: "G-7RVY794221"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
+
+            const googleSignInButton = document.getElementById('googleSignInButton');
+            googleSignInButton.addEventListener('click', () => {
+                const auth = getAuth();
+                const provider = new GoogleAuthProvider();
+
+                signInWithPopup(auth, provider)
+                    .then((result) => {
+                        // L'utilisateur est connecté avec succès
+                        const user = result.user;
+                        console.log("Utilisateur connecté avec succès: ", user);
+                    })
+                    .catch((error) => {
+                        // Une erreur s'est produite lors de la connexion
+                        console.error("Erreur de connexion Google: ", error);
+                    });
+            }); 
+    </script>
 </body>
 </html>
