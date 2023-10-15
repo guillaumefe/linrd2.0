@@ -1429,8 +1429,8 @@ function exportToExcel(tasks) {
 
                 if (avancement !== -1) {
                     const projectRow = {
-                        Project: projectName,
-                        Avancement: avancement,
+                        Jalons : projectName,
+                        Avancement : avancement,
                     };
                     projectsData.push(projectRow);
                 }
@@ -1438,7 +1438,7 @@ function exportToExcel(tasks) {
         })
         .then(() => {
             const projectsHeaders = [
-                { header: 'Project', key: 'Project', width: 30 },
+                { header: 'Jalons', key: 'Jalons', width: 30 },
                 { header: 'Avancement', key: 'Avancement', width: 15 },
             ];
             projectsWorksheet.columns = projectsHeaders;
