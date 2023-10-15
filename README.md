@@ -2,6 +2,8 @@
 
 Linrd is a simple yet powerful application designed to help you organize and manage your tasks, projects, and activities seamlessly. Whether you want to plan your personal life or handle professional projects, Linrd simplifies task tracking and progress monitoring.
 
+Linrd is secure by design: It does not use any remote servers to store your data. Your information remains local, ensuring the privacy and security of your personal data. With Linrd, you have complete control over your information, making it an ideal choice for those who prioritize privacy protection.
+
 ## What Does It Do?
 
 ### Intuitive Task Editor
@@ -38,6 +40,8 @@ With Linrd, managing your projects and activities becomes more efficient than ev
 # Linrd - Gérez Vos Tâches et Projets Efficacement
 
 Linrd est une application simple et puissante conçue pour vous aider à organiser et gérer vos tâches, projets et activités de manière fluide. Que vous souhaitiez planifier votre vie personnelle ou gérer des projets professionnels, Linrd facilite le suivi et l'avancement de vos tâches.
+
+Linrd est sécurisé par conception : Il n'utilise aucun serveur distant pour stocker vos données. Vos informations restent en local, garantissant ainsi la confidentialité et la sécurité de vos données personnelles. Avec Linrd, vous avez un contrôle total sur vos informations, ce qui en fait un choix idéal pour ceux qui attachent de l'importance à la protection de la vie privée.
 
 ## À quoi ça sert ?
 
