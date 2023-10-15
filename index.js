@@ -1438,7 +1438,7 @@ function exportToExcel(tasks) {
         })
         .then(() => {
             const projectsHeaders = [
-                { header: 'Projet ou Jalon', key: 'Jalon', width: 30 },
+                { header: 'Projet (ou Jalon)', key: 'Jalon', width: 30 },
                 { header: 'Avancement', key: 'Avancement', width: 15 },
             ];
             projectsWorksheet.columns = projectsHeaders;
