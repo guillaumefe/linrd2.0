@@ -1389,49 +1389,6 @@ function removeAccents(str) {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-
-
-
-// Gérer le clic sur le bouton d'export
-document.getElementById('exportExcelButton').addEventListener('click', () => {
-    exportToExcel(allTasks);
-});
-
-// Fonction pour convertir un timestamp en date lisible
-function formatDateFromTimestamp(timestamp) {
-    const date = new Date(Math.floor(timestamp / 1)); // Convertir le timestamp en date 
-    const formattedDate = date.toLocaleString(); // Formater la date en une chaîne lisible
-    console.log(formattedDate)
-    return formattedDate;
-}
-
-async function calculateProjectProgressAsync(projectName) {
-    // Filter the tasks that belong to the specific project
-    let projectTasks = allTasks.filter((task) => task.clean_context.includes(projectName));
-
-    projectTasks = projectTasks.filter((task) => !task.is_project);
-
-    const projectTasksCount = projectTasks.length;
-
-    if (projectTasksCount === 0) {
-        return -1;
-    }
-
-    // Filter active tasks (not 'doc' and not 'cancel')
-    const actionableTasks = projectTasks.filter(
-        (task) => task.status !== '+-' && task.status !== 'x-'
-    );
-
-    // Calculate the progress percentage
-    const completedTasksCount = actionableTasks.filter((task) => task.status === '--').length;
-    const percentage = (completedTasksCount / (actionableTasks.length || 1)) * 100;
-
-    //console.log(`Nombre de tâches terminées pour le projet ${projectName}: ${completedTasksCount}`);
-    //console.log(`Pourcentage d'avancement pour le projet ${projectName}: ${percentage.toFixed(2)}%`);
-
-    return `${percentage.toFixed(2)}%`;
-}
-
 function exportToExcel(tasks) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'linrd';
@@ -1669,6 +1626,7 @@ function exportToExcel(tasks) {
         });
 }
 
+// Gérer le clic sur le bouton d'export
 const exportButton = document.getElementById('exportExcelButton');
 exportButton.addEventListener('click', () => {
     exportToExcel(allTasks);
