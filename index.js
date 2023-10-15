@@ -1400,9 +1400,9 @@ function exportToExcel(tasks) {
     indexWorksheet.addRow(['Point d\'avancement']);
     indexWorksheet.addRow([]);
     indexWorksheet.addRow([]);
-    indexWorksheet.addRow(['La colonne Projet offre une vue macro']);
+    indexWorksheet.addRow(['La colonne Projets offre une vue macro']);
     indexWorksheet.addRow(['La colonne Taches offre une vue micro']);
-    indexWorksheet.addRow(['La colonne Status offre une vue meta']);
+    indexWorksheet.addRow(['La colonne Statuts offre une vue meta']);
 
     const projectsWorksheet = workbook.addWorksheet('Projets');
     const projectsData = [];
