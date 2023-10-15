@@ -1432,14 +1432,20 @@ async function calculateProjectProgressAsync(projectName) {
     return `${percentage.toFixed(2)}%`;
 }
 
-
-
 function exportToExcel(tasks) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'linrd';
     workbook.lastModifiedBy = 'guillaumefe';
     workbook.created = new Date();
     workbook.modified = new Date();
+
+    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' } } });
+    indexWorksheet.addRow(['Point d\'avancement']);
+    indexWorksheet.addRow([]);
+    indexWorksheet.addRow([]);
+    indexWorksheet.addRow(['La colonne Projet offre une vue macro']);
+    indexWorksheet.addRow(['La colonne Taches offre une vue micro']);
+    indexWorksheet.addRow(['La colonne Status offre une vue meta']);
 
     const projectsWorksheet = workbook.addWorksheet('Projets');
     const projectsData = [];
@@ -1454,7 +1460,7 @@ function exportToExcel(tasks) {
                 projectMap.set(projectName, []);
             }
 
-            if (projectMap.get(projectName)) //testr
+            if (projectMap.get(projectName))
                 projectMap.get(projectName).push(task);
         }
     }
@@ -1496,7 +1502,6 @@ function exportToExcel(tasks) {
                         pattern: 'solid',
                         fgColor: { argb: backgroundColor },
                     };
-                    // Activer le retour à la ligne automatique
                     cell.alignment = { wrapText: true };
                 });
             });
@@ -1511,13 +1516,8 @@ function exportToExcel(tasks) {
             ];
             worksheet.columns = headers;
 
-            // Style the header of the 'Etat' column with center alignment
             worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
-
-            // Style the header of the 'Started by' column with right alignment
             worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
-
-            // Style the header of the 'End by' column with right alignment
             worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
 
             worksheet.getRow(1).eachCell((cell) => {
@@ -1548,23 +1548,17 @@ function exportToExcel(tasks) {
                             fgColor: { argb: backgroundColor },
                         };
 
-                        // Activer le retour à la ligne automatique
                         cell.alignment = { wrapText: true };
 
-                        // For the 'Etat' column, set center alignment for values and apply data validation
                         if (cell.address.includes('C')) {
                             cell.alignment = { horizontal: 'center', vertical: 'middle' };
-
-                            // Configure data validation with the list from the 'Parametre' worksheet
                             cell.dataValidation = {
                                 type: 'list',
                                 formulae: ['"inbox,done,doc,await,delay,cancel"'],
-                                //allowBlank: true,
                                 showDropDown: true,
                             };
                         }
 
-                        // For the 'Started by' column, set right alignment for values
                         if (cell.address.includes('D')) {
                             cell.alignment = { horizontal: 'right', vertical: 'middle' };
                         }
@@ -1572,7 +1566,6 @@ function exportToExcel(tasks) {
                         if (cell.address.includes('E')) {
                             cell.alignment = { horizontal: 'right', vertical: 'middle' };
                         }
-
                     });
                 });
 
@@ -1594,7 +1587,6 @@ function exportToExcel(tasks) {
             const statusCounts = {};
             tasks.forEach((task) => {
                 const status = removeAccents(task.tab || 'Inconnu');
-                // Ajoutez une condition pour exclure les projets du comptage
                 if (status !== 'project') {
                     statusCounts[status] = (statusCounts[status] || 0) + 1;
                 }
@@ -1617,11 +1609,88 @@ function exportToExcel(tasks) {
                 index++;
             }
 
+            const sourceWorksheet = workbook.addWorksheet('Source', { properties: { tabColor: { argb: 'FF660000' } } });
+            sourceWorksheet.mergeCells('A1:H1');
+            sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
+            sourceWorksheet.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
+            sourceWorksheet.getCell('A1').border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            };
+            sourceWorksheet.getCell('A1').fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFFFF' },
+            };
+            sourceWorksheet.getCell('A1').value = mainEditor.getValue();
+
+            // Ajout de la nouvelle cellule fusionnée
+            sourceWorksheet.mergeCells('A2:H2');
+            sourceWorksheet.getCell('A2').value = 'Merci de copier le contenu de la cellule ci-dessus dans l\'editeur ci-dessous : ';
+            //sourceWorksheet.getCell('A2').font = { name: 'Courier New' };
+            sourceWorksheet.getCell('A2').alignment = { vertical: 'middle', horizontal: 'left' };
+            sourceWorksheet.getCell('A2').border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            };
+            sourceWorksheet.getCell('A2').fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFFFF' },
+            };
+
+            // Ajout de la nouvelle cellule fusionnée
+            sourceWorksheet.mergeCells('A3:H3');
+            sourceWorksheet.getCell('A3').value = 'https://guillaumefe.github.io/linrd2.0';
+            //sourceWorksheet.getCell('A3').font = { name: 'Courier New' };
+            sourceWorksheet.getCell('A3').alignment = { vertical: 'middle', horizontal: 'left' };
+            sourceWorksheet.getCell('A3').border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            };
+            sourceWorksheet.getCell('A3').fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFFFF' },
+            };
+
             workbook.xlsx.writeBuffer().then((buffer) => {
                 const blob = new Blob([buffer], {
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 });
-                saveAs(blob, 'projects.xlsx');
+                saveAs(blob, 'pipeline.xlsx');
             });
         });
+}
+
+const exportButton = document.getElementById('exportExcelButton');
+exportButton.addEventListener('click', () => {
+    exportToExcel(allTasks);
+});
+
+function formatDateFromTimestamp(timestamp) {
+    const date = new Date(Math.floor(timestamp / 1));
+    const formattedDate = date.toLocaleString();
+    return formattedDate;
+}
+
+async function calculateProjectProgressAsync(projectName) {
+    let projectTasks = allTasks.filter((task) => task.clean_context.includes(projectName));
+    projectTasks = projectTasks.filter((task) => !task.is_project);
+    const projectTasksCount = projectTasks.length;
+    if (projectTasksCount === 0) {
+        return -1;
+    }
+    const actionableTasks = projectTasks.filter(
+        (task) => task.status !== '+-' && task.status !== 'x-'
+    );
+    const completedTasksCount = actionableTasks.filter((task) => task.status === '--').length;
+    const percentage = (completedTasksCount / (actionableTasks.length || 1)) * 100;
+    return `${percentage.toFixed(2)}%`;
 }
