@@ -12,7 +12,9 @@ Linrd provides an intuitive task editor located on the left side of the screen. 
 
 ### Visualize Your Next Steps
 
-The right half of the screen is dedicated to a visualizer. It automatically displays your upcoming tasks, providing you with a clear roadmap for your day. In the search field, you can use the + and - symbols to refine your search. When you enclose a phrase in double quotes, like "example phrase", the search will exclude tasks that do not contain the exact phrase. Adding a + symbol before a keyword, such as +important, will filter tasks that match the keyword, while prefixing a - symbol, like -exclude, will exclude tasks containing that keyword from the results.
+The right half of the screen is dedicated to a visualizer. It automatically displays your upcoming tasks, providing you with a clear roadmap for your day. 
+
+In the search field, you can use the + and - symbols to refine your search. When you enclose a phrase in double quotes, like "example phrase", the search will exclude tasks that do not contain the exact phrase. Adding a + symbol before a keyword, such as +important, will filter tasks that match the keyword, while prefixing a - symbol, like -exclude, will exclude tasks containing that keyword from the results.
 
 ### Generate Progress Reports
 
