@@ -1511,8 +1511,8 @@ function exportToExcel(tasks) {
                 { header: 'Action', key: 'task', width: 40 },
                 { header: 'Contexte', key: 'context', width: 65 },
                 { header: 'Etat', key: 'status', width: 10 },
-                { header: 'Started by', key: 'ctime', width: 25 },
-                { header: 'End by', key: 'delay', width: 25 },
+                { header: 'Creation Time', key: 'ctime', width: 25 },
+                { header: 'Next Tick', key: 'delay', width: 25 },
             ];
             worksheet.columns = headers;
 
