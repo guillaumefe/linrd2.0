@@ -20,6 +20,8 @@ In the search field, you can use the + and - symbols to refine your search. When
 
 Linrd makes it easy to generate progress reports. With a single click, export your tasks to an Excel file summarizing your accomplishments. This feature allows you to keep track of what you've achieved and share updates on your projects.
 
+Additionally, by using the + and - symbols in the search field, you can further tailor the report's display, focusing on specific tasks and excluding others as needed.
+
 ## Getting Started
 
 1. **Specify**: To begin, enter your projects line by line in the editor located on the left. For each project, add a sublist containing the next actions to be taken. You can continue this hierarchical structure indefinitely, detailing your projects down to their smallest components (an ideal task is one that takes 2 minutes or less to complete).
@@ -60,6 +62,8 @@ Dans le champ de recherche, vous pouvez utiliser les symboles `+` et `-` pour af
 ### Générez des Rapports d'Avancement
 
 Linrd vous permet de générer facilement des rapports d'avancement. En un simple clic, exportez vos tâches vers un fichier Excel qui résume vos progrès. Cela vous permet de garder une trace de ce que vous avez accompli et de partager des mises à jour sur vos projets.
+
+De plus, en utilisant les symboles `+` et `-` dans le champ de recherche, vous pouvez limiter l'affichage du rapport en conséquence. Cela signifie que vous avez un contrôle précis sur les données que vous souhaitez inclure dans vos rapports, vous permettant ainsi de personnaliser l'information que vous partagez.
 
 ## Démarrage Rapide
 
