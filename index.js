@@ -23,10 +23,28 @@ let allTasks = [];
 let SUCCESS_RATE = 0;
 let successRateHistory = [];
 let showFolders = true;
+const initialData = loadData();
 let popupEditor;
 let savedTasks = null;
 let searchTimeoutId;
+let mainEditor = ace.edit("editor");
 const searchField = document.getElementById('search-input');
+
+// CONFIGURATION BEFORE
+mainEditor.session.on("change", updateEditor);
+mainEditor.session.insert({ row: 0, column: 0 }, initialData);
+mainEditor.session.on("change", () => {
+    const content = mainEditor.getValue();
+    const tasks = generateTasks(content);
+});
+
+// CONFIGURATION ON LOAD
+window.onload = function () {
+    ace.require(['ace/ace'], function (ace) {
+        addAndRemoveLine();
+    });
+    regenerateTasks()
+};
 
 // EVENT LISTENERS
 document.addEventListener('DOMContentLoaded', function () {
@@ -39,18 +57,51 @@ document.addEventListener('DOMContentLoaded', function () {
     onglet.dispatchEvent(event);
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    const landingPage = document.getElementById("landingPage");
+    const inputTask = document.getElementById("inputTask");
+    if (initialData) {
+        landingPage.style.display = "none";
+    }
+    inputTask.addEventListener("input", function () {
+        const inputLength = inputTask.value.length;
+
+        if (inputLength >= 0) {
+            const intensity = 1 - (inputLength - 1) * 0.05;
+            landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
+
+            if (intensity <= 0) {
+                // Supprime l'élément de la page lorsque l'opacité atteint 0%
+                landingPage.remove();
+                mainEditor.gotoLine(0, Infinity, true);
+                mainEditor.focus();
+            }
+        }
+        const firstLineRange = mainEditor.session.getLine(0).length;
+        mainEditor.session.replace({ start: { row: 0, column: 0 }, end: { row: 0, column: firstLineRange } }, inputTask.value);
+    });
+    inputTask.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === "Escape") {
+            // Supprime l'élément de la page lorsque l'utilisateur appuie sur Entrée
+            mainEditor.focus();
+            mainEditor.gotoLine(1, Infinity, true);
+            landingPage.remove();
+        }
+    });
+});
+
 searchField.addEventListener('keyup', function () {
     filterTasks(this.value);
 });
 
 // ATTACH EVENTS TO DOM
 document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
-//document.getElementById('loadMoreInbox').addEventListener('click', () => loadMoreTasks('inbox'));
-//document.getElementById('loadMoreDone').addEventListener('click', () => loadMoreTasks('done'));
-//document.getElementById('loadMoreDoc').addEventListener('click', () => loadMoreTasks('doc'));
-//document.getElementById('loadMoreAwait').addEventListener('click', () => loadMoreTasks('await'));
-//document.getElementById('loadMoreDelay').addEventListener('click', () => loadMoreTasks('delay'));
-//document.getElementById('loadMoreCancel').addEventListener('click', () => loadMoreTasks('cancel'));
+document.getElementById('loadMoreInbox').addEventListener('click', () => loadMoreTasks('inbox'));
+document.getElementById('loadMoreDone').addEventListener('click', () => loadMoreTasks('done'));
+document.getElementById('loadMoreDoc').addEventListener('click', () => loadMoreTasks('doc'));
+document.getElementById('loadMoreAwait').addEventListener('click', () => loadMoreTasks('await'));
+document.getElementById('loadMoreDelay').addEventListener('click', () => loadMoreTasks('delay'));
+document.getElementById('loadMoreCancel').addEventListener('click', () => loadMoreTasks('cancel'));
 
 // SET INTERVAL
 setInterval(updateDelayTasksStatus, 6000);
@@ -67,6 +118,10 @@ function handleDoneButtonClick(task) {
 
 function handleDocButtonClick(task) {
     updateTaskStatus(task, '+-');
+}
+
+function saveData(data) {
+    localStorage.setItem('editor', JSON.stringify(data));
 }
 
 function getStatusSymbol(line) {
@@ -104,7 +159,7 @@ function createParagraphWithText(text) {
 
 function closeModal() {
     document.getElementById("modal").style.display = "none";
-    window.mainEditor.focus();
+    mainEditor.focus();
 }
 
 function saveTasks() {
@@ -169,6 +224,14 @@ function initPopupEditor() {
     popupEditor.session.setMode("ace/mode/yaml");
 }
 
+
+function loadData() {
+    const data = localStorage.getItem("editor");
+    const tasks = data ? JSON.parse(data) : [];
+    let descriptions = tasks.map((task) => task.description).join("\n");
+    return descriptions;
+}
+
 function getParentTask(indent, contextStack) {
     for (let i = contextStack.length - 1; i >= 0; i--) {
         if (contextStack[i].indent < indent) {
@@ -214,7 +277,7 @@ function toggleEditor() {
 }
 
 function updateTaskDelay(task, delayTimestamp) {
-    const lines = window.mainEditor.session.doc.getAllLines();
+    const lines = mainEditor.session.doc.getAllLines();
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex];
 
@@ -223,12 +286,12 @@ function updateTaskDelay(task, delayTimestamp) {
 
     // Ajouter le nouveau délai
     lines[taskLineIndex] = `${taskLine} (delay=${parseInt(delayTimestamp)})`;
-    window.mainEditor.session.doc.setValue(lines.join("\n"));
+    mainEditor.session.doc.setValue(lines.join("\n"));
 }
 
 
 function updateTaskAwait(task, awaitTimestamp) {
-    const lines = window.mainEditor.session.doc.getAllLines();
+    const lines = mainEditor.session.doc.getAllLines();
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex];
 
@@ -237,7 +300,7 @@ function updateTaskAwait(task, awaitTimestamp) {
 
     // Ajouter le nouveau délai
     lines[taskLineIndex] = `${taskLine} (` + "delay" + `=${parseInt(awaitTimestamp)})`;
-    window.mainEditor.session.doc.setValue(lines.join("\n"));
+    mainEditor.session.doc.setValue(lines.join("\n"));
 }
 
 function createDivWithClass(className) {
@@ -291,7 +354,7 @@ function addTaskToTop(editor_source, editor_destination, yaml) {
 
 
 function updateTaskStatus(task, newStatusSymbol) {
-    const lines = window.mainEditor.session.doc.getAllLines();
+    const lines = mainEditor.session.doc.getAllLines();
     const taskLineIndex = parseInt(task.id || task.target.dataset.task_id) - 1;
     let taskLine = lines[taskLineIndex].trimEnd();
     const currentStatusSymbol = getStatusSymbol(taskLine);
@@ -300,7 +363,7 @@ function updateTaskStatus(task, newStatusSymbol) {
     taskLine = taskLine.replace(/(-|\+|&|x|\*)-$/g, '').trimEnd();
 
     lines[taskLineIndex] = taskLine.replace(taskLine, `${taskLine} ${newStatusSymbol}`);
-    window.mainEditor.session.doc.setValue(lines.join("\n"));
+    mainEditor.session.doc.setValue(lines.join("\n"));
 
     // Reapply current search filter after changing task status
     const searchInput = document.querySelector('#search-input'); // replace this with your actual search input selector
@@ -406,12 +469,12 @@ function extractAttributes(description) {
 }
 
 function toggleTheme() {
-    let theme = window.mainEditor.getTheme();
+    let theme = mainEditor.getTheme();
     let newTheme =
         theme === "ace/theme/monokai"
             ? "ace/theme/github"
             : "ace/theme/monokai";
-    window.mainEditor.setTheme(newTheme);
+    mainEditor.setTheme(newTheme);
     popupEditor.setTheme(newTheme);
 }
 
@@ -718,7 +781,7 @@ function handleNoContent() {
 }
 
 function regenerateTasks(keyword) {
-    const editorContent = window.mainEditor.getValue();
+    const editorContent = mainEditor.getValue();
     allTasks = parseYaml(editorContent);
 
     if (!keyword) {
@@ -997,7 +1060,7 @@ function openModal() {
 function validateYaml() {
     let content = popupEditor.getValue();
     try {
-        addTaskToTop(popupEditor, window.mainEditor, content);
+        addTaskToTop(popupEditor, mainEditor, content);
         closeModal();
         document.getElementById("yaml-error").style.display = "none";
     } catch (e) {
@@ -1443,18 +1506,18 @@ function exportToExcel(tasks) {
                 { header: 'Action', key: 'task', width: 40 },
                 { header: 'Contexte', key: 'context', width: 65 },
                 { header: 'Etat', key: 'status', width: 10 },
-                { header: 'Creation Time', key: 'ctime', width: 25 },
-                { header: 'Next Tick', key: 'delay', width: 25 },
+                { header: 'Started by', key: 'ctime', width: 25 },
+                { header: 'End by', key: 'delay', width: 25 },
             ];
             worksheet.columns = headers;
 
             // Style the header of the 'Etat' column with center alignment
             worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
 
-            // Style the header of the 'Creation Time' column with right alignment
+            // Style the header of the 'Started by' column with right alignment
             worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
 
-            // Style the header of the 'Next Tick' column with right alignment
+            // Style the header of the 'End by' column with right alignment
             worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
 
             worksheet.getRow(1).eachCell((cell) => {
