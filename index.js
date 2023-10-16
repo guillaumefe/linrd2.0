@@ -1396,6 +1396,7 @@ function removeAccents(str) {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+
 function exportToExcel(tasks) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'linrd';
@@ -1403,7 +1404,7 @@ function exportToExcel(tasks) {
     workbook.created = new Date();
     workbook.modified = new Date();
 
-    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' } });
+    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' }}});
     indexWorksheet.addRow(['Point d\'avancement']);
     indexWorksheet.addRow([]);
     indexWorksheet.addRow([]);
@@ -1551,7 +1552,7 @@ function exportToExcel(tasks) {
             const statusCounts = {};
             tasks.forEach((task) => {
                 const status = removeAccents(task.tab || 'Inconnu');
-                if ( status !== 'project' && ( !task.context || task.context.length === 0 ) ) {
+                if (status !== 'project' && (!task.context || task.context.length === 0)) {
                     statusCounts[status] = (statusCounts[status] || 0) + 1;
                 }
             });
@@ -1573,7 +1574,7 @@ function exportToExcel(tasks) {
                 index++;
             }
 
-            const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' } });
+            const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' }}});
             sourceWorksheet.mergeCells('A1:H1');
             sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
             sourceWorksheet.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
