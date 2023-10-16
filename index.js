@@ -1088,7 +1088,7 @@ function addAndRemoveLine() {
     // Supprimer la nouvelle ligne après un certain temps
     setTimeout(() => {
         const newLinesCount = session.getLength();
-        session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 } });
+        session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 }});
     }, 1); // Le délai avant de supprimer la ligne. Ici, il est défini sur 3000 millisecondes (3 secondes).
 }
 
@@ -1388,12 +1388,247 @@ function openPopup(title, task) {
     document.body.appendChild(popupContainer);
 }
 
-
-
-
 // Fonction pour remplacer les caractères accentués par leurs équivalents non accentués
 function removeAccents(str) {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function formatDateFromTimestamp(timestamp) {
+    const date = new Date(Math.floor(timestamp / 1));
+    const formattedDate = date.toLocaleString();
+    return formattedDate;
+}
+
+async function calculateProjectProgressAsync(projectName) {
+    let projectTasks = allTasks.filter((task) => task.clean_context.includes(projectName));
+    projectTasks = projectTasks.filter((task) => !task.is_project);
+    const projectTasksCount = projectTasks.length;
+    if (projectTasksCount === 0) {
+        return -1;
+    }
+    const actionableTasks = projectTasks.filter(
+        (task) => task.status !== '+-' && task.status !== 'x-'
+    );
+    const completedTasksCount = actionableTasks.filter((task) => task.status === '--').length;
+    const percentage = (completedTasksCount / (actionableTasks.length || 1)) * 100;
+    return `${percentage.toFixed(2)}%`;
+}
+
+async function exportToExcel(tasks) {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'linrd';
+    workbook.lastModifiedBy = 'guillaumefe';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+
+    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' }}});
+    indexWorksheet.addRow(['Point d\'avancement']);
+    indexWorksheet.addRow([]);
+    indexWorksheet.addRow([]);
+    indexWorksheet.addRow(['La colonne Projets offre une vue macro']);
+    indexWorksheet.addRow(['La colonne Taches offre une vue micro']);
+    indexWorksheet.addRow(['La colonne Statuts offre une vue meta']);
+
+    const projectsWorksheet = workbook.addWorksheet('Projets');
+    const projectsData = [];
+
+    // Filter root-projects (projects without parents)
+    const rootProjects = tasks.filter(task => task.tab === 'project' && !task.parent);
+
+    for (const task of rootProjects) {
+        const avancement = await calculateProjectProgressAsync(task.clean_description);
+
+        if (avancement !== -1) {
+            const projectRow = {
+                Jalon: task.clean_description,
+                Avancement: avancement,
+            };
+            projectsData.push(projectRow);
+        }
+    }
+
+    const projectsHeaders = [
+        { header: 'Projet (ou Jalon)', key: 'Jalon', width: 30 },
+        { header: 'Avancement', key: 'Avancement', width: 15 },
+    ];
+    projectsWorksheet.columns = projectsHeaders;
+    projectsWorksheet.getRow(1).eachCell((cell) => {
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'B0E0E6' },
+        };
+        cell.font = { bold: true };
+    });
+
+    projectsData.forEach((projectRow, index) => {
+        const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
+        projectsWorksheet.addRow(projectRow).eachCell((cell) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: backgroundColor },
+            };
+            cell.alignment = { wrapText: true };
+        });
+    });
+
+    const worksheet = workbook.addWorksheet('Taches');
+    const headers = [
+        { header: 'Action', key: 'task', width: 40 },
+        { header: 'Contexte', key: 'context', width: 65 },
+        { header: 'Etat', key: 'status', width: 10 },
+        { header: 'Creation Time', key: 'ctime', width: 25 },
+        { header: 'Next Tick', key: 'delay', width: 25 },
+    ];
+    worksheet.columns = headers;
+
+    worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
+
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'B0E0E6' },
+        };
+        cell.font = { bold: true };
+    });
+
+    tasks
+        .filter((task) => task.tab !== 'project')
+        .forEach((task, index) => {
+            const dataRow = worksheet.addRow({
+                task: removeAccents(task.clean_description) || '',
+                context: removeAccents(task.clean_context) || '',
+                status: removeAccents(task.tab) || '',
+                ctime: task.attributes && task.attributes.ctime ? formatDateFromTimestamp(task.attributes.ctime) : '',
+                delay: task.delay ? formatDateFromTimestamp(task.delay) : '',
+            });
+
+            const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
+            dataRow.eachCell((cell) => {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: backgroundColor },
+                };
+
+                cell.alignment = { wrapText: true };
+
+                if (cell.address.includes('C')) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    cell.dataValidation = {
+                        type: 'list',
+                        formulae: ['"inbox,done,doc,await,delay,cancel"'],
+                        showDropDown: true,
+                    };
+                }
+
+                if (cell.address.includes('D')) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                }
+
+                if (cell.address.includes('E')) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                }
+            });
+        });
+
+    const statusWorksheet = workbook.addWorksheet('Statuts');
+    const statusHeaders = [
+        { header: 'Statut', key: 'status', width: 15 },
+        { header: "Nombre d'occurences", key: 'count', width: 30 },
+    ];
+    statusWorksheet.columns = statusHeaders;
+    statusWorksheet.getRow(1).eachCell((cell) => {
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'B0E0E6' },
+        };
+        cell.font = { bold: true };
+    });
+
+    const statusCounts = {};
+    tasks.forEach((task) => {
+        const status = removeAccents(task.tab || 'Inconnu');
+        if (status !== 'project') {
+            statusCounts[status] = (statusCounts[status] || 0) + 1;
+        }
+    });
+
+    let index = 2;
+    for (const status in statusCounts) {
+        statusWorksheet.addRow([status, statusCounts[status]]);
+        const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
+        statusWorksheet.getCell(`A${index}`).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: backgroundColor },
+        };
+        statusWorksheet.getCell(`B${index}`).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: backgroundColor },
+        };
+        index++;
+    }
+
+    const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' }}});
+    sourceWorksheet.mergeCells('A1:H1');
+    sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
+    sourceWorksheet.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
+    sourceWorksheet.getCell('A1').border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+    };
+    sourceWorksheet.getCell('A1').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFFF' },
+    };
+    sourceWorksheet.getCell('A1').value = mainEditor.getValue();
+
+    sourceWorksheet.mergeCells('A2:H2');
+    sourceWorksheet.getCell('A2').value = 'Merci de copier le contenu de la cellule ci-dessus dans l\'éditeur ci-dessous : ';
+    sourceWorksheet.getCell('A2').alignment = { vertical: 'middle', horizontal: 'left' };
+    sourceWorksheet.getCell('A2').border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+    };
+    sourceWorksheet.getCell('A2').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFFF' },
+    };
+
+    sourceWorksheet.mergeCells('A3:H3');
+    sourceWorksheet.getCell('A3').value = 'https://guillaumefe.github.io/linrd2.0';
+    sourceWorksheet.getCell('A3').alignment = { vertical: 'middle', horizontal: 'left' };
+    sourceWorksheet.getCell('A3').border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+    };
+    sourceWorksheet.getCell('A3').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFFF' },
+    };
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+        const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        saveAs(blob, 'pipeline.xlsx');
+    });
 }
 
 
@@ -1634,24 +1869,3 @@ const exportButton = document.getElementById('exportExcelButton');
 exportButton.addEventListener('click', () => {
     exportToExcel(allTasks);
 });
-
-function formatDateFromTimestamp(timestamp) {
-    const date = new Date(Math.floor(timestamp / 1));
-    const formattedDate = date.toLocaleString();
-    return formattedDate;
-}
-
-async function calculateProjectProgressAsync(projectName) {
-    let projectTasks = allTasks.filter((task) => task.clean_context.includes(projectName));
-    projectTasks = projectTasks.filter((task) => !task.is_project);
-    const projectTasksCount = projectTasks.length;
-    if (projectTasksCount === 0) {
-        return -1;
-    }
-    const actionableTasks = projectTasks.filter(
-        (task) => task.status !== '+-' && task.status !== 'x-'
-    );
-    const completedTasksCount = actionableTasks.filter((task) => task.status === '--').length;
-    const percentage = (completedTasksCount / (actionableTasks.length || 1)) * 100;
-    return `${percentage.toFixed(2)}%`;
-}
