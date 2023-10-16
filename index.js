@@ -1088,7 +1088,7 @@ function addAndRemoveLine() {
     // Supprimer la nouvelle ligne après un certain temps
     setTimeout(() => {
         const newLinesCount = session.getLength();
-        session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 }});
+        session.remove({ start: { row: newLinesCount - 1, column: 0 }, end: { row: newLinesCount, column: 0 } });
     }, 1); // Le délai avant de supprimer la ligne. Ici, il est défini sur 3000 millisecondes (3 secondes).
 }
 
@@ -1421,7 +1421,7 @@ async function exportToExcel(tasks) {
     workbook.created = new Date();
     workbook.modified = new Date();
 
-    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' }}});
+    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' } } });
     indexWorksheet.addRow(['Point d\'avancement']);
     indexWorksheet.addRow([]);
     indexWorksheet.addRow([]);
@@ -1486,7 +1486,7 @@ async function exportToExcel(tasks) {
     worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
     worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
     worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
-
+    
     worksheet.getRow(1).eachCell((cell) => {
         cell.fill = {
             type: 'pattern',
@@ -1576,7 +1576,7 @@ async function exportToExcel(tasks) {
         index++;
     }
 
-    const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' }}});
+    const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' } } });
     sourceWorksheet.mergeCells('A1:H1');
     sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
     sourceWorksheet.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
@@ -1631,7 +1631,6 @@ async function exportToExcel(tasks) {
     });
 }
 
-
 function exportToExcel(tasks) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'linrd';
@@ -1639,13 +1638,8 @@ function exportToExcel(tasks) {
     workbook.created = new Date();
     workbook.modified = new Date();
 
-    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' }}});
-    indexWorksheet.addRow(['Point d\'avancement']);
-    indexWorksheet.addRow([]);
-    indexWorksheet.addRow([]);
-    indexWorksheet.addRow(['La colonne Projets offre une vue macro']);
-    indexWorksheet.addRow(['La colonne Taches offre une vue micro']);
-    indexWorksheet.addRow(['La colonne Statuts offre une vue meta']);
+    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' } } });
+    indexWorksheet.addRow(['Point d\'avancement'], [], [], ['La colonne Projets offre une vue macro'], ['La colonne Taches offre une vue micro'], ['La colonne Statuts offre une vue meta']);
 
     const projectsWorksheet = workbook.addWorksheet('Projets');
     const projectsData = [];
@@ -1686,22 +1680,14 @@ function exportToExcel(tasks) {
             ];
             projectsWorksheet.columns = projectsHeaders;
             projectsWorksheet.getRow(1).eachCell((cell) => {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'B0E0E6' },
-                };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B0E0E6' } };
                 cell.font = { bold: true };
             });
 
             projectsData.forEach((projectRow, index) => {
                 const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
                 projectsWorksheet.addRow(projectRow).eachCell((cell) => {
-                    cell.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: { argb: backgroundColor },
-                    };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: backgroundColor } };
                     cell.alignment = { wrapText: true };
                 });
             });
@@ -1716,16 +1702,12 @@ function exportToExcel(tasks) {
             ];
             worksheet.columns = headers;
 
-            worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
-            worksheet.getCell('D1').alignment = { horizontal: 'right', vertical: 'middle' };
-            worksheet.getCell('E1').alignment = { horizontal: 'right', vertical: 'middle' };
+            ['C1', 'D1', 'E1'].forEach((cellAddress) => {
+                worksheet.getCell(cellAddress).alignment = { horizontal: 'center', vertical: 'middle' };
+            });
 
             worksheet.getRow(1).eachCell((cell) => {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'B0E0E6' },
-                };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B0E0E6' } };
                 cell.font = { bold: true };
             });
 
@@ -1742,28 +1724,15 @@ function exportToExcel(tasks) {
 
                     const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
                     dataRow.eachCell((cell) => {
-                        cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: { argb: backgroundColor },
-                        };
-
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: backgroundColor } };
                         cell.alignment = { wrapText: true };
 
                         if (cell.address.includes('C')) {
                             cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                            cell.dataValidation = {
-                                type: 'list',
-                                formulae: ['"inbox,done,doc,await,delay,cancel"'],
-                                showDropDown: true,
-                            };
+                            cell.dataValidation = { type: 'list', formulae: ['"inbox,done,doc,await,delay,cancel"'], showDropDown: true };
                         }
 
-                        if (cell.address.includes('D')) {
-                            cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                        }
-
-                        if (cell.address.includes('E')) {
+                        if (cell.address.includes('D') || cell.address.includes('E')) {
                             cell.alignment = { horizontal: 'right', vertical: 'middle' };
                         }
                     });
@@ -1776,11 +1745,7 @@ function exportToExcel(tasks) {
             ];
             statusWorksheet.columns = statusHeaders;
             statusWorksheet.getRow(1).eachCell((cell) => {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'B0E0E6' },
-                };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B0E0E6' } };
                 cell.font = { bold: true };
             });
 
@@ -1796,73 +1761,33 @@ function exportToExcel(tasks) {
             for (const status in statusCounts) {
                 statusWorksheet.addRow([status, statusCounts[status]]);
                 const backgroundColor = index % 2 === 0 ? 'B0C4DE' : 'FFFFFF';
-                statusWorksheet.getCell(`A${index}`).fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: backgroundColor },
-                };
-                statusWorksheet.getCell(`B${index}`).fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: backgroundColor },
-                };
+                statusWorksheet.getCell(`A${index}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: backgroundColor } };
+                statusWorksheet.getCell(`B${index}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: backgroundColor } };
                 index++;
             }
-
-            const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' }}});
-            sourceWorksheet.mergeCells('A1:H1');
-            sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
-            sourceWorksheet.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
-            sourceWorksheet.getCell('A1').border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' },
-            };
-            sourceWorksheet.getCell('A1').fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FFFFFF' },
-            };
-            sourceWorksheet.getCell('A1').value = mainEditor.getValue();
-
-            sourceWorksheet.mergeCells('A2:H2');
-            sourceWorksheet.getCell('A2').value = 'Merci de copier le contenu de la cellule ci-dessus dans l\'editeur ci-dessous : ';
-            sourceWorksheet.getCell('A2').alignment = { vertical: 'middle', horizontal: 'left' };
-            sourceWorksheet.getCell('A2').border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' },
-            };
-            sourceWorksheet.getCell('A2').fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FFFFFF' },
-            };
-
-            sourceWorksheet.mergeCells('A3:H3');
-            sourceWorksheet.getCell('A3').value = 'https://guillaumefe.github.io/linrd2.0';
-            sourceWorksheet.getCell('A3').alignment = { vertical: 'middle', horizontal: 'left' };
-            sourceWorksheet.getCell('A3').border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' },
-            };
-            sourceWorksheet.getCell('A3').fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FFFFFF' },
-            };
-
-            workbook.xlsx.writeBuffer().then((buffer) => {
-                const blob = new Blob([buffer], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                });
-                saveAs(blob, 'pipeline.xlsx');
-            });
         });
+
+    const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' } } });
+    ['A1', 'A2', 'A3'].forEach((cellAddress, index) => {
+        sourceWorksheet.mergeCells(cellAddress + ':H' + (index + 1));
+    });
+
+    ['A1', 'A2', 'A3'].forEach((cellAddress) => {
+        const cell = sourceWorksheet.getCell(cellAddress);
+        cell.alignment = { vertical: 'middle', horizontal: 'left' };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF' } };
+    });
+
+    sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
+    sourceWorksheet.getCell('A1').value = mainEditor.getValue();
+    sourceWorksheet.getCell('A2').value = 'Merci de copier le contenu de la cellule ci-dessus dans l\'éditeur ci-dessous : ';
+    sourceWorksheet.getCell('A3').value = 'https://guillaumefe.github.io/linrd2.0';
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, 'pipeline.xlsx');
+    });
 }
 
 const exportButton = document.getElementById('exportExcelButton');
