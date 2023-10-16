@@ -27,7 +27,12 @@ const initialData = loadData();
 let popupEditor;
 let savedTasks = null;
 let searchTimeoutId;
+
 let mainEditor = ace.edit("editor");
+mainEditor.setOption("showFoldWidgets", true);
+mainEditor.setTheme("ace/theme/github");
+mainEditor.session.setMode("ace/mode/yaml");
+
 const searchField = document.getElementById('search-input');
 
 // CONFIGURATION BEFORE
@@ -44,6 +49,8 @@ window.onload = function () {
         addAndRemoveLine();
     });
     regenerateTasks()
+
+    mainEditor.session.foldAll(1, false);
 };
 
 // EVENT LISTENERS
