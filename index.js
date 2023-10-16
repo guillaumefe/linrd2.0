@@ -1403,7 +1403,7 @@ function exportToExcel(tasks) {
     workbook.created = new Date();
     workbook.modified = new Date();
 
-    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' } } });
+    const indexWorksheet = workbook.addWorksheet('Index', { properties: { tabColor: { argb: 'FF660000' } });
     indexWorksheet.addRow(['Point d\'avancement']);
     indexWorksheet.addRow([]);
     indexWorksheet.addRow([]);
@@ -1420,7 +1420,7 @@ function exportToExcel(tasks) {
             const status = removeAccents(task.tab || 'Inconnu');
             const projectName = removeAccents(task.clean_description) || '';
 
-            if (status === 'project' && !projectMap.has(projectName)) {
+            if (status === 'project' && !projectMap.has(projectName) && (!task.context || task.context.length === 0)) {
                 projectMap.set(projectName, []);
             }
 
@@ -1436,8 +1436,8 @@ function exportToExcel(tasks) {
 
                 if (avancement !== -1) {
                     const projectRow = {
-                        Jalon : projectName,
-                        Avancement : avancement,
+                        Jalon: projectName,
+                        Avancement: avancement,
                     };
                     projectsData.push(projectRow);
                 }
@@ -1551,7 +1551,7 @@ function exportToExcel(tasks) {
             const statusCounts = {};
             tasks.forEach((task) => {
                 const status = removeAccents(task.tab || 'Inconnu');
-                if (status !== 'project') {
+                if ( status !== 'project' && ( !task.context || task.context.length === 0 ) ) {
                     statusCounts[status] = (statusCounts[status] || 0) + 1;
                 }
             });
@@ -1573,7 +1573,7 @@ function exportToExcel(tasks) {
                 index++;
             }
 
-            const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' } } });
+            const sourceWorksheet = workbook.addWorksheet('Audit', { properties: { tabColor: { argb: 'FF660000' } });
             sourceWorksheet.mergeCells('A1:H1');
             sourceWorksheet.getCell('A1').font = { name: 'Courier New' };
             sourceWorksheet.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
@@ -1590,10 +1590,8 @@ function exportToExcel(tasks) {
             };
             sourceWorksheet.getCell('A1').value = mainEditor.getValue();
 
-            // Ajout de la nouvelle cellule fusionnée
             sourceWorksheet.mergeCells('A2:H2');
             sourceWorksheet.getCell('A2').value = 'Merci de copier le contenu de la cellule ci-dessus dans l\'editeur ci-dessous : ';
-            //sourceWorksheet.getCell('A2').font = { name: 'Courier New' };
             sourceWorksheet.getCell('A2').alignment = { vertical: 'middle', horizontal: 'left' };
             sourceWorksheet.getCell('A2').border = {
                 top: { style: 'thin' },
@@ -1607,10 +1605,8 @@ function exportToExcel(tasks) {
                 fgColor: { argb: 'FFFFFF' },
             };
 
-            // Ajout de la nouvelle cellule fusionnée
             sourceWorksheet.mergeCells('A3:H3');
             sourceWorksheet.getCell('A3').value = 'https://guillaumefe.github.io/linrd2.0';
-            //sourceWorksheet.getCell('A3').font = { name: 'Courier New' };
             sourceWorksheet.getCell('A3').alignment = { vertical: 'middle', horizontal: 'left' };
             sourceWorksheet.getCell('A3').border = {
                 top: { style: 'thin' },
@@ -1633,7 +1629,6 @@ function exportToExcel(tasks) {
         });
 }
 
-// Gérer le clic sur le bouton d'export
 const exportButton = document.getElementById('exportExcelButton');
 exportButton.addEventListener('click', () => {
     exportToExcel(allTasks);
