@@ -50,7 +50,7 @@ window.onload = function () {
     });
     regenerateTasks()
 
-    mainEditor.session.foldAll(1, false);
+    mainEditor.session.foldAll();
 };
 
 // EVENT LISTENERS
