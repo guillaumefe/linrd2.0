@@ -65,7 +65,7 @@ window.onload = async function () {
 
     mainEditor.session.foldAll();
 	
-	//regenerateTasks()
+    regenerateTasks()
 	
 };
 
