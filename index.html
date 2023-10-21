@@ -16,6 +16,14 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
+	<div id="loadingOverlay" class="loading-overlay">
+		<div class="loading-content">
+			<div class="spinner-border text-primary" role="status">
+				<span class="sr-only">Loading...</span>
+			</div>
+			<div class="loading-text">Loading...</div>
+		</div>
+	</div>
     <div id="landingPage" class="landing-page">
         <div class="question">Que souhaitez-vous faire aujourd'hui?<i style="margin-left:4px;font-size:9px;">(or press ESCAPE)</i></div>
         <input id="inputTask" class="task-input" type="text" autofocus />
@@ -81,10 +89,6 @@
                         </button>
                         <!-- Ajoutez le nouveau bouton ici -->
                     </div>
-
-
-
-
                 </li>
             </ul>
             <ul class="navbar-nav">
@@ -168,7 +172,7 @@
             <div class="tab-pane fade" id="inbox" role="tabpanel" aria-labelledby="inbox-tab">
                 <h3>Inbox</h3>
                 <div id="success-rate" style="font-family:courier; display: none;"></div>
-                <div id="prediction" style="font-family:courier; display: none;"></div>
+				<div id="prediction" style="font-family:courier; display: none;"></div>
                 <!-- Bouton "New Project" -->
                 <button onclick="openModal()" style="margin-top: 5px; margin-left: 5px;" class="btn btn-sm">
                     New project
