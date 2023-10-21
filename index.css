@@ -81,9 +81,9 @@ html {
 }
 
     .button:disabled {
-        background-color: #cccccc; /* Couleur d'arrière-plan pour les boutons désactivés */
-        color: #999999; /* Couleur du texte pour les boutons désactivés */
-        cursor: not-allowed; /* Change le curseur pour indiquer que le bouton est désactivé */
+        background-color: #cccccc; /* Couleur d'arriÃ¨re-plan pour les boutons dÃ©sactivÃ©s */
+        color: #999999; /* Couleur du texte pour les boutons dÃ©sactivÃ©s */
+        cursor: not-allowed; /* Change le curseur pour indiquer que le bouton est dÃ©sactivÃ© */
     }
 
 .red {
@@ -136,7 +136,7 @@ html {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1000; /* Assurez-vous que le popup est placé au-dessus de l'overlay */
+    z-index: 1000; /* Assurez-vous que le popup est placÃ© au-dessus de l'overlay */
 }
 
 
@@ -195,8 +195,8 @@ input.disabled {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.5); /* Couleur blanche avec 50% d'opacité */
-    z-index: 999; /* Assurez-vous que l'overlay est placé au-dessus des autres éléments */
+    background-color: rgba(255, 255, 255, 0.5); /* Couleur blanche avec 50% d'opacitÃ© */
+    z-index: 999; /* Assurez-vous que l'overlay est placÃ© au-dessus des autres Ã©lÃ©ments */
 }
 
 .landing-page {
@@ -210,7 +210,7 @@ input.disabled {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 255, 1);
-    z-index: 1000;
+    z-index: 9999;
 }
 
 .question {
@@ -283,4 +283,28 @@ input.disabled {
         flex: 1;
         min-width: 100%;
     }
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9998;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loading-text {
+    margin-top: 10px;
+    font-weight: bold;
 }
