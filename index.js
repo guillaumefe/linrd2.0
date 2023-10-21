@@ -30,7 +30,7 @@ let searchTimeoutId;
 let mainEditor = ace.edit("editor");
 
 const searchField = document.getElementById('search-input');
-
+searchField.value = "";
 
 // CONFIGURATION ON LOAD
 window.onload = async function () {
