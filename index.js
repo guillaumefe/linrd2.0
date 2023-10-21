@@ -1799,7 +1799,7 @@ if (editorData) {
 		// Insérer le contenu du local storage au début de l'éditeur Ace
 		mainEditor.setValue(parsedData + "\n\n" + editorContent);
 		// Supprimer l'objet "editor" du local storage
-		localStorage.removeItem("editor");
+		//localStorage.removeItem("editor");
 	}, 4000);
 
   } catch (error) {
