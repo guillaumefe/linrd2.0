@@ -1777,3 +1777,33 @@ const exportButton = document.getElementById('exportExcelButton');
 exportButton.addEventListener('click', () => {
     exportToExcel(allTasks);
 });
+
+
+// Vérifier si l'objet "editor" existe dans le local storage
+const editorData = localStorage.getItem("editor");
+
+if (editorData) {
+  try {
+    // Parser le contenu en JSON
+	let parsedData;
+	try {
+		parsedData = JSON.parse(editorData);
+	} catch(e) {
+		console.log(e)
+		parsedData = editorData;
+	}
+
+	setTimeout( () => {
+		// Récupérer le contenu de l'éditeur Ace
+		const editorContent = mainEditor.getValue();
+		// Insérer le contenu du local storage au début de l'éditeur Ace
+		mainEditor.setValue(parsedData + "\n\n" + editorContent);
+		// Supprimer l'objet "editor" du local storage
+		localStorage.removeItem("editor");
+	}, 4000);
+
+  } catch (error) {
+    console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
+  }
+}
+
