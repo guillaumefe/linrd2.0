@@ -1815,3 +1815,15 @@ if (editorData) {
   }
 }
 
+// Attend que la page soit entièrement chargée
+document.addEventListener("DOMContentLoaded", async function () {
+  // Cache la splash page en utilisant la classe "splash-container"
+  var splashContainer = document.querySelector(".splash-container");
+  if (splashContainer) {
+	setTimeout( () => {
+		splashContainer.style.display = "none";
+		var bkgContainer = document.querySelector(".background-container");
+		bkgContainer.style.display = "none";
+	}, 6000);
+  }
+});
