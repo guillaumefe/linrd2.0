@@ -31,6 +31,7 @@ let mainEditor = ace.edit("editor");
 
 const searchField = document.getElementById('search-input');
 
+
 // CONFIGURATION ON LOAD
 window.onload = async function () {
     //ace.require(['ace/ace'], function (ace) {
@@ -47,13 +48,24 @@ window.onload = async function () {
 
 	// CONFIGURATION BEFORE
 	mainEditor.session.on("change", updateEditor);
+	let typingTimer;
+	const delay = 1000; // Délai en millisecondes
+
 	mainEditor.session.on("change", () => {
+	  // Réinitialisez le minuteur à chaque modification
+	  clearTimeout(typingTimer);
+	  document.getElementById("loadingOverlay").style.display = "flex";
+	  // Démarrez un nouveau minuteur
+	  typingTimer = setTimeout(() => {
 		const content = mainEditor.getValue();
-		const tasks = generateTasks(content);
+		generateTasks(content);
+	  }, delay);
 	});
+
+
     mainEditor.session.foldAll();
 	
-	regenerateTasks()
+	//regenerateTasks()
 	
 };
 
@@ -332,7 +344,7 @@ function clearSearchTimeout() {
 function performSearch(keyword) {
     searchTimeoutId = setTimeout(() => {
         regenerateTasks(keyword);
-    }, 500); // Ajustez la durée du délai (en millisecondes) au besoin
+    }, 0); // Ajustez la durée du délai (en millisecondes) au besoin
 }
 
 // VERY SHORT FONCTIONS
@@ -736,26 +748,31 @@ function parseYaml(yaml) {
     return updatedTasks;
 }
 
-function generateTasks(editorContent) {
+async function generateTasks(editorContent) {
     if (!editorContent) {
+		document.getElementById("loadingOverlay").style.display = "none";
         return handleNoContent();
     }
 
     let tasks;
     let projects;
-
-    try {
+	
+    try {		
         tasks = parseYaml(editorContent);
         projects = parseProjects(editorContent);
         updateViewer(tasks);
+		
     } catch (e) {
         console.error("Erreur lors du chargement du contenu de l'éditeur :", e);
         return [];
     }
 
     saveData(tasks);
-
+	
     const delayTasks = filterDelayTasks(tasks);
+	setTimeout(()=>{
+		document.getElementById("loadingOverlay").style.display = "none";
+	}, 0)
     return transformTasks(delayTasks, projects);
 }
 
