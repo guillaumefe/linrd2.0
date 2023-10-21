@@ -33,9 +33,9 @@ const searchField = document.getElementById('search-input');
 
 // CONFIGURATION ON LOAD
 window.onload = async function () {
-    ace.require(['ace/ace'], function (ace) {
-        addAndRemoveLine();
-    });
+    //ace.require(['ace/ace'], function (ace) {
+    //    addAndRemoveLine();
+    //});
 	
 	initialData = await loadData();
 	mainEditor.session.insert({ row: 0, column: 0 }, initialData);
@@ -68,12 +68,38 @@ document.addEventListener('DOMContentLoaded', function () {
     onglet.dispatchEvent(event);
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+// Vérifier si la clé "editorDB" dans IndexedDB est vide
+async function isIndexedDBEmpty() {
+  const db = await openDatabaseSync("editorDB", 1);
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["editorStore"], "readonly");
+    const store = transaction.objectStore("editorStore");
+    const request = store.get("editor");
+
+    request.onsuccess = (event) => {
+      const data = event.target.result;
+      resolve(data === undefined || data === "[]");
+    };
+
+    request.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
     const landingPage = document.getElementById("landingPage");
     const inputTask = document.getElementById("inputTask");
-    if (inputTask.value.length) {
-        landingPage.style.display = "none";
-    }
+	inputTask.value = "",
+
+	isIndexedDBEmpty().then((isEmpty) => {
+	  if (isEmpty) {
+		landingPage.style.display = "flex"; // Afficher la landing page si IndexedDB est vide
+	  } else {
+		landingPage.style.display = "none"; // Masquer la landing page si IndexedDB contient des données
+	  }
+	});
+	
     inputTask.addEventListener("input", function () {
         const inputLength = inputTask.value.length;
 
