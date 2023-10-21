@@ -334,7 +334,10 @@ function filterDelayTasks(tasks) {
 
 function filterTasks(keyword) {
     clearSearchTimeout();
-    performSearch(keyword);
+    // Démarrez un délai avant de lancer la recherche
+    searchTimeoutId = setTimeout(() => {
+        performSearch(keyword);
+    }, 500); // Vous pouvez ajuster la durée du délai (en millisecondes) au besoin
 }
 
 function clearSearchTimeout() {
