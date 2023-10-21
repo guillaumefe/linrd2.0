@@ -23,34 +23,38 @@ let allTasks = [];
 let SUCCESS_RATE = 0;
 let successRateHistory = [];
 let showFolders = true;
-const initialData = loadData();
+let initialData = null;
 let popupEditor;
 let savedTasks = null;
 let searchTimeoutId;
-
 let mainEditor = ace.edit("editor");
-mainEditor.setOption("showFoldWidgets", true);
-mainEditor.setTheme("ace/theme/github");
-mainEditor.session.setMode("ace/mode/yaml");
 
 const searchField = document.getElementById('search-input');
 
-// CONFIGURATION BEFORE
-mainEditor.session.on("change", updateEditor);
-mainEditor.session.insert({ row: 0, column: 0 }, initialData);
-mainEditor.session.on("change", () => {
-    const content = mainEditor.getValue();
-    const tasks = generateTasks(content);
-});
-
 // CONFIGURATION ON LOAD
-window.onload = function () {
+window.onload = async function () {
     ace.require(['ace/ace'], function (ace) {
         addAndRemoveLine();
     });
-    regenerateTasks()
+	
+	initialData = await loadData();
+	mainEditor.session.insert({ row: 0, column: 0 }, initialData);
+	
 
+	mainEditor.setOption("showFoldWidgets", true);
+	mainEditor.setTheme("ace/theme/github");
+	mainEditor.session.setMode("ace/mode/yaml");
+
+	// CONFIGURATION BEFORE
+	mainEditor.session.on("change", updateEditor);
+	mainEditor.session.on("change", () => {
+		const content = mainEditor.getValue();
+		const tasks = generateTasks(content);
+	});
     mainEditor.session.foldAll();
+	
+	regenerateTasks()
+	
 };
 
 // EVENT LISTENERS
@@ -67,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener("DOMContentLoaded", function () {
     const landingPage = document.getElementById("landingPage");
     const inputTask = document.getElementById("inputTask");
-    if (initialData) {
+    if (inputTask.value.length) {
         landingPage.style.display = "none";
     }
     inputTask.addEventListener("input", function () {
@@ -127,8 +131,90 @@ function handleDocButtonClick(task) {
     updateTaskStatus(task, '+-');
 }
 
-function saveData(data) {
-    localStorage.setItem('editor', JSON.stringify(data));
+// function saveData(data) {
+//     localStorage.setItem('editor', JSON.stringify(data));
+// }
+
+// function loadData() {
+//     const data = localStorage.getItem("editor");
+//     const tasks = data ? JSON.parse(data) : [];
+//     let descriptions = tasks.map((task) => task.description).join("\n");
+//     return descriptions;
+// }
+
+
+// Création de la base de données IndexedDB et du magasin d'objets "editorStore"
+const request = window.indexedDB.open("editorDB", 1);
+
+request.onupgradeneeded = (event) => {
+    const db = event.target.result;
+    db.createObjectStore("editorStore");
+};
+
+request.onsuccess = async (event) => {
+    // La base de données IndexedDB est ouverte avec succès, vous pouvez maintenant utiliser les fonctions loadData et saveData.
+};
+
+request.onerror = (event) => {
+    console.error("Erreur lors de l'ouverture de la base de données IndexedDB.");
+};
+
+async function openDatabaseSync(dbName, version) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName, version);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      db.createObjectStore("editorStore");
+    };
+
+    request.onsuccess = (event) => {
+      resolve(event.target.result);
+    };
+
+    request.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
+}
+
+async function loadData() {
+  const db = await openDatabaseSync("editorDB", 1);
+  
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["editorStore"], "readonly");
+    const store = transaction.objectStore("editorStore");
+
+    const dataRequest = store.get("editor");
+
+    dataRequest.onsuccess = (event) => {
+      const data = event.target.result;
+	  const tasks = data ? JSON.parse(data) : [];
+	  let descriptions = tasks.map((task) => task.description).join("\n");
+	  resolve(descriptions);
+    };
+
+    dataRequest.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
+}
+
+async function saveData(data) {
+  const db = await openDatabaseSync("editorDB", 1);
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["editorStore"], "readwrite");
+    const store = transaction.objectStore("editorStore");
+    const saveRequest = store.put(JSON.stringify(data), "editor");
+
+    saveRequest.onsuccess = (event) => {
+      resolve("Données enregistrées avec succès");
+    };
+
+    saveRequest.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
 }
 
 function getStatusSymbol(line) {
@@ -229,14 +315,6 @@ function initPopupEditor() {
     popupEditor = ace.edit("popup-editor");
     popupEditor.setTheme("ace/theme/github");
     popupEditor.session.setMode("ace/mode/yaml");
-}
-
-
-function loadData() {
-    const data = localStorage.getItem("editor");
-    const tasks = data ? JSON.parse(data) : [];
-    let descriptions = tasks.map((task) => task.description).join("\n");
-    return descriptions;
 }
 
 function getParentTask(indent, contextStack) {
