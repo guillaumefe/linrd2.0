@@ -1779,6 +1779,7 @@ exportButton.addEventListener('click', () => {
 });
 
 
+
 // Vérifier si l'objet "editor" existe dans le local storage
 const editorData = localStorage.getItem("editor");
 
@@ -1790,7 +1791,14 @@ if (editorData) {
 		parsedData = JSON.parse(editorData);
 	} catch(e) {
 		console.log(e)
-		parsedData = editorData;
+		try {
+			let descriptions = editorData.map((task) => task.description).join("\n");
+			parsedData = JSON.parse(descriptions);
+		} catch(e) {
+			console.log(e)
+			parsedData = editorData;
+		}
+		
 	}
 
 	setTimeout( () => {
@@ -1800,7 +1808,7 @@ if (editorData) {
 		mainEditor.setValue(parsedData + "\n\n" + editorContent);
 		// Supprimer l'objet "editor" du local storage
 		//localStorage.removeItem("editor");
-	}, 4000);
+	}, 0);
 
   } catch (error) {
     console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
