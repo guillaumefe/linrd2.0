@@ -373,7 +373,7 @@ input.disabled {
 
 @media (max-width: 768px) {
     body, html {
-        font-size: 22px; /* Exemple de taille de police pour les écrans plus petits */
+        font-size: 20px; /* Exemple de taille de police pour les écrans plus petits */
     }
     .button {
         font-size: 18px; /* Augmentez la taille de la police des boutons */
