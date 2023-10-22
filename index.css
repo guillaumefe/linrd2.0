@@ -373,15 +373,19 @@ input.disabled {
 
 @media (max-width: 768px) {
     body, html {
-        font-size: 16px; /* Exemple de taille de police pour les écrans plus petits */
+        font-size: 22px; /* Exemple de taille de police pour les écrans plus petits */
     }
-    input[type="text"],
-    input[type="number"],
-    textarea {
-        width: 100%; /* Remplir la largeur de l'écran */
+    .button {
+        font-size: 18px; /* Augmentez la taille de la police des boutons */
+        padding: 12px 24px; /* Augmentez la taille des boutons en ajustant les marges intérieures */
     }
 }
 
+input[type="text"],
+input[type="number"],
+textarea {
+    width: 100%; /* Remplir la largeur de l'écran */
+}
 #popup-editor {
     transform: scale(1); /* Réinitialiser le zoom à 1 */
     min-height: 420px;
