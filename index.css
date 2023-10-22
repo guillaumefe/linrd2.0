@@ -365,3 +365,9 @@ input.disabled {
     transform: translateX(0);
   }
 }
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 1s ease; /* Durée et courbe de transition au choix */
+}
+
