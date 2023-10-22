@@ -602,14 +602,25 @@ function extractAttributes(description) {
     return attributes;
 }
 
-function toggleTheme() {
-  let theme = mainEditor.getTheme();
-  let newTheme = theme === "ace/theme/monokai" ? "ace/theme/github" : "ace/theme/monokai";
-  mainEditor.setTheme(newTheme);
-  popupEditor.setTheme(newTheme);
+function toggleTheme(theme) {
+	let newTheme;
+	
+	if (theme) {
+		if (theme === "dark") {
+			newTheme = "ace/theme/monokai";
+		} else {
+			newTheme = "ace/theme/github";
+		}
+		
+	} else {
+		theme = mainEditor.getTheme();
+		newTheme = theme === "ace/theme/monokai" ? "ace/theme/github" : "ace/theme/monokai";
+	}
+	mainEditor.setTheme(newTheme);
+	popupEditor.setTheme(newTheme);
 
-  // Enregistrez le thème dans le localStorage
-  localStorage.setItem("editorTheme", newTheme);
+	// Enregistrez le thème dans le localStorage
+	localStorage.setItem("editorTheme", newTheme);
 }
 
 function parseProjects(editorContent) {
@@ -1045,6 +1056,7 @@ function getTaskDetails(line, taskId, index, lines) {
         is_project: isProject(line, index, lines),
         status: statusSymbol,
         context: [],
+		line : line,
         indent,
         id: `${taskId}`,
         atime: existingAtime,
@@ -1877,3 +1889,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 toggleEditor()
+
+function setTheme(theme) {
+  toggleTheme(theme)
+}
