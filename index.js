@@ -1827,3 +1827,23 @@ document.addEventListener("DOMContentLoaded", async function () {
 	}, 6000);
   }
 });
+
+
+// Attend que la page soit entièrement chargée
+document.addEventListener("DOMContentLoaded", async function () {
+  // Cache la splash page en utilisant la classe "splash-container"
+  var splashContainer = document.querySelector(".splash-container");
+  var loadingContent = document.querySelector(".loading-content");
+  var bkgContainer = document.querySelector(".background-container");
+
+  if (splashContainer) {
+	setTimeout( () => {
+		loadingContent.classList.add("fade-out");
+		setTimeout( () => {
+			bkgContainer.classList.add("fade-out");
+			splashContainer.style.display = "none";
+			bkgContainer.style.display = "none";
+		}, 1500);
+	}, 4500);
+  }
+});
