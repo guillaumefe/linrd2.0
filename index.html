@@ -66,48 +66,37 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle"
-                       href="#"
-                       id="navbarDropdown"
-                       role="button"
-                       data-toggle="dropdown"
-                       aria-haspopup="true"
-                       aria-expanded="false">
-                        Configuration
-                    </a>
-
-                    <!--div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                      <button
-                        class="dropdown-item"
-                        id="debugToggleButton"
-                        onclick="toggleDebugMode()!broken"
-                        Activer/désasctiver le mode debug
-                      </button-->
-                    <!-- Ajoutez ce bouton pour basculer entre les tâches et les dossiers -->
-                    <!--button
-                        class="dropdown-item"
-                        id="toggleTasksAndFolders"
-                        onclick="toggleProjects()"
-                      >
-                        Basculer entre tâches et projets
-                      </button>
-                    </div-->
-
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <button class="dropdown-item"
-                                id="toggleEditorButton">
-                            Afficher/cacher l'éditeur
-                        </button>
-                        <button class="dropdown-item"
-                                onclick="toggleTheme()">
-                            Light/Dark terminal
-                        </button>
-                        <!-- Ajoutez le nouveau bouton ici -->
-                    </div>
-                </li>
-            </ul>
+			<ul class="navbar-nav mr-auto">
+			  <li class="nav-item dropdown">
+				<a class="nav-link"
+				   style="font-size:14px;margin-bottom:-0.1em;"
+				   href="#"
+				   role="button"
+				   id="toggleEditorButton">
+				  Afficher/cacher l'éditeur
+				</a>
+			  </li>
+			  <li class="nav-item">
+				<div class="dropdown">
+				  <a class="nav-link dropdown-toggle"
+					style="font-size:14px;margin-bottom:-0.1em;"
+					href="#"
+					role="button"
+					type="button"
+					id="themeDropdown"
+					data-toggle="dropdown"
+					aria-haspopup="true"
+					aria-expanded="false">
+					Dark/Light Mode
+				  </a>
+				  <div class="dropdown-menu" aria-labelledby="themeDropdown">
+					<!-- Options du menu déroulant -->
+					<a class="dropdown-item" href="#" onclick="setTheme('light')">Light</a>
+					<a class="dropdown-item" href="#" onclick="setTheme('dark')">Dark</a>
+				  </div>
+				</div>
+			  </li>
+			</ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a style="display:none" class="nav-link" href="#">Se connecter</a>
