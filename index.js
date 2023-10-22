@@ -18,7 +18,6 @@ let docTasks = [];
 let awaitTasks = [];
 let delayTasks = [];
 let cancelTasks = [];
-let debugMode = false;
 let allTasks = [];
 let SUCCESS_RATE = 0;
 let successRateHistory = [];
@@ -118,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (inputLength >= 0) {
             const intensity = 1 - (inputLength - 1) * 0.05;
             landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
-
+			
             if (intensity <= 0) {
                 // Supprime l'élément de la page lorsque l'opacité atteint 0%
                 landingPage.remove();
@@ -1118,6 +1117,21 @@ function createTaskElement(task) {
 
     taskTextElement.onclick = () => highlightTaskLine(task);
     taskElement.appendChild(taskTextElement);
+	//taskElement.appendChild(createButton('Next action', 'white', () => handleDocButtonClick(task)));
+	//for (var i = 1; i <= task.indent; i++) console.log(i);
+	//const openModalButton = createButton("Next action", "white", () => openModal(task.context.map((ctx) => ctx).join("\n")) + task.clean_description));
+	
+	const openModalButton = createButton(
+	  "Edit",
+	  "white",
+	  () => {
+		const spaces = " ".repeat(task.indent); // Crée une chaîne d'espaces
+		const descriptionWithIndent = spaces + task.clean_description; // Ajoute les espaces à la description
+		openModal(task.context.map((ctx) => ctx).join("\n") + ((task.context.length) ? "\n" : "") + descriptionWithIndent + "\n" + spaces + "  ");
+	  }
+	);
+	
+	taskElement.appendChild(openModalButton);
 
     return taskElement;
 }
@@ -1170,22 +1184,30 @@ function updateTab(tabId, tasks) {
     tabTasks.appendChild(taskList);
 }
 
-function openModal() {
+function openModal(content) {
+	popupEditor.setValue("");
     document.getElementById("modal").style.display = "block";
     if (!popupEditor) {
         initPopupEditor();
     } else {
         const searchInput = document.getElementById("search-input");
-        const searchValue = searchInput.value.trim();
+		
+        let searchValue;
+		if(content) {
+			searchValue = content;
+		} else {
+			searchValue = searchInput.value.trim();
+		}
 
         if (searchValue !== "") {
-            popupEditor.setValue(searchValue + "\n ");
+            popupEditor.setValue(searchValue);
             popupEditor.clearSelection();
         }
 
         popupEditor.resize();
         popupEditor.focus();
     }
+	
 }
 
 function validateYaml() {
@@ -1847,3 +1869,5 @@ document.addEventListener("DOMContentLoaded", async function () {
 	}, 4500);
   }
 });
+
+toggleEditor()
