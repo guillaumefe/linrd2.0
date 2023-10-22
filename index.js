@@ -23,7 +23,7 @@ let SUCCESS_RATE = 0;
 let successRateHistory = [];
 let showFolders = true;
 let initialData = null;
-let popupEditor;
+let popupEditor = ace.edit("popup-editor");
 let savedTasks = null;
 let searchTimeoutId;
 let mainEditor = ace.edit("editor");
@@ -33,6 +33,7 @@ searchField.value = "";
 
 // CONFIGURATION ON LOAD
 window.onload = async function () {
+	
     //ace.require(['ace/ace'], function (ace) {
     //    addAndRemoveLine();
     //});
@@ -352,9 +353,17 @@ function performSearch(keyword) {
 // VERY SHORT FONCTIONS
 
 function initPopupEditor() {
-    popupEditor = ace.edit("popup-editor");
-    popupEditor.setTheme("ace/theme/github");
+    //popupEditor.setTheme("ace/theme/github");
     popupEditor.session.setMode("ace/mode/yaml");
+
+	// Chargez le thème à partir du localStorage ou utilisez un thème par défaut
+	const savedTheme = localStorage.getItem("editorTheme");
+	if (savedTheme) {
+	  popupEditor.setTheme(savedTheme);
+	} else {
+	  popupEditor.setTheme("ace/theme/github"); // Thème par défaut
+	}
+
 }
 
 function getParentTask(indent, contextStack) {
@@ -594,15 +603,14 @@ function extractAttributes(description) {
 }
 
 function toggleTheme() {
-    let theme = mainEditor.getTheme();
-    let newTheme =
-        theme === "ace/theme/monokai"
-            ? "ace/theme/github"
-            : "ace/theme/monokai";
-    mainEditor.setTheme(newTheme);
-    popupEditor.setTheme(newTheme);
-}
+  let theme = mainEditor.getTheme();
+  let newTheme = theme === "ace/theme/monokai" ? "ace/theme/github" : "ace/theme/monokai";
+  mainEditor.setTheme(newTheme);
+  popupEditor.setTheme(newTheme);
 
+  // Enregistrez le thème dans le localStorage
+  localStorage.setItem("editorTheme", newTheme);
+}
 
 function parseProjects(editorContent) {
     const lines = editorContent.split('\n');
@@ -1189,31 +1197,29 @@ function openModal(content) {
     document.getElementById("modal").style.display = "block";
     if (!popupEditor) {
         initPopupEditor();
-    } else {
-        const searchInput = document.getElementById("search-input");
-		
-        let searchValue;
-		if(content) {
-			searchValue = content;
-		} else {
-			searchValue = searchInput.value.trim();
-		}
-
-        if (searchValue !== "") {
-            popupEditor.setValue(searchValue);
-            popupEditor.clearSelection();
-        }
-
-        popupEditor.resize();
-        popupEditor.focus();
     }
+	let searchValue;
+	if(content && !(content instanceof Event)) {
+		searchValue = content.trim(" \n");
+	} else {
+		const searchInput = document.getElementById("search-input");
+		searchValue = searchInput.value.trim(" \n")
+	}
+
+	if (searchValue !== "") {
+		popupEditor.setValue(searchValue);
+		popupEditor.clearSelection();
+	}
+
+	popupEditor.resize();
+	popupEditor.focus();
 	
 }
 
 function validateYaml() {
     let content = popupEditor.getValue();
     try {
-        addTaskToTop(popupEditor, mainEditor, content);
+        addTaskToTop(popupEditor, mainEditor, content); //.trim(" \n")
         closeModal();
         document.getElementById("yaml-error").style.display = "none";
     } catch (e) {
