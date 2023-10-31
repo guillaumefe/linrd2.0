@@ -2095,3 +2095,88 @@ async function decryptDataWithPIN(encryptedData, pin) {
 
 
 //})()
+
+// Ouvrir la base de données avec deux magasins d'objets : "encryptedStore" et "unencryptedStore"
+function openDatabaseSync(dbName, version) {
+  const db = indexedDB.open(dbName, version);
+  if (db.setVersion && version !== db.version) {
+    const setVersion = db.setVersion(version);
+    setVersion.onsuccess = (event) => {
+      const store = db.createObjectStore("encryptedStore");
+      store.add("", "editor"); // Créez une entrée vide pour "editor"
+    };
+  }
+  return db;
+}
+
+// Sauvegarde les données chiffrées
+async function saveEncryptedData(encryptedData) {
+  const db = openDatabaseSync("editorDB", 2);
+  const transaction = db.transaction(["encryptedStore"], "readwrite");
+  const store = transaction.objectStore("encryptedStore");
+  const saveRequest = store.put(encryptedData, "editor");
+
+  return new Promise((resolve, reject) => {
+    saveRequest.onsuccess = (event) => {
+      console.log("Données chiffrées enregistrées avec succès");
+      resolve("Données chiffrées et enregistrées avec succès");
+    };
+
+    saveRequest.onerror = (event) => {
+      console.error(event.target.error);
+      reject(event.target.error);
+    };
+  });
+}
+
+// Chargement des données depuis les deux magasins et fusion
+async function loadData(pin) {
+  const db = openDatabaseSync("editorDB", 2);
+
+  const encryptedData = await loadDataFromStore(db, "encryptedStore", "editor", pin);
+  const unencryptedData = await loadDataFromStore(db, "editorStore", "editor");
+
+  // Combiner les données non chiffrées et chiffrées
+  const combinedData = combineData(unencryptedData, encryptedData);
+  return combinedData;
+}
+
+// Chargement de données à partir d'un magasin d'objets
+async function loadDataFromStore(db, storeName, key, pin) {
+  const transaction = db.transaction([storeName], "readonly");
+  const store = transaction.objectStore(storeName);
+
+  return new Promise(async (resolve, reject) => {
+    const request = store.get(key);
+    request.onsuccess = async (event) => {
+      const data = event.target.result;
+
+      if (data) {
+        try {
+          if (storeName === "encryptedStore") {
+            // Déchiffrez les données si elles proviennent du magasin "encryptedStore"
+            const decryptedData = await decryptDataWithPIN(data, pin);
+            resolve(decryptedData);
+          } else {
+            resolve(data);
+          }
+        } catch (error) {
+          reject(error);
+        }
+      } else {
+        resolve("");
+      }
+    };
+
+    request.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
+}
+
+// Combiner les données non chiffrées et chiffrées
+function combineData(unencryptedData, encryptedData) {
+  // Mettez en œuvre votre logique pour fusionner les données ici
+  // Par exemple, vous pourriez simplement ajouter le contenu chiffré à la fin du contenu non chiffré
+  return unencryptedData + "\n" + encryptedData;
+}
