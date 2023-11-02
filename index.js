@@ -1935,7 +1935,7 @@ async function decryptDataWithPIN(encryptedData, pin) {
 				  initialData = await loadData();
 
 				// get v1 editor in localstorage
-				//initialData += await getEditorFromLocal()
+				initialData += await getEditorFromLocal()
 
 				// get v2 editor in indexeddb
 				initialData += await checkAndCopyEditorContent()
