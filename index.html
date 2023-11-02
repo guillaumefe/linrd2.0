@@ -12,15 +12,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.14.0/js-yaml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
 <div class="background-container"></div>
+<!-- Splash Page -->
 <div class="splash-container">
-  <div class="splash-page">
     <div class="loading-content">
-      <div class="spinner-border text-primary" role="status">
+      <div id="loading-wheel" class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
       </div>
       <div class="loading-text">L</div>
@@ -29,6 +30,30 @@
       <div class="loading-text" style="animation-delay: 0.6s;">R</div>
       <div class="loading-text" style="animation-delay: 0.8s;">D</div>
     </div>
+  <div class="splash-page">
+    <!-- Code PIN form -->
+    <div id="pinCreationForm" style="display: none;">
+        <h4>Créez un code PIN à 6 chiffres</h4>
+        <form id="pinCreateForm">
+            <input type="password" id="pinCreateInput" maxlength="6" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
+            <button type="button" id="pinCreateButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Créer</button>
+        </form>
+    </div>
+    <div id="pinConfirmationForm" style="display: none;">
+        <h4>Confirmez le code PIN</h4>
+        <form id="pinConfirmForm">
+            <input type="password" id="pinConfirmInput" maxlength="6" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
+            <button type="button" id="pinConfirmButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Confirmer</button>
+        </form>
+    </div>
+	<div id="pinUnlockForm" style="display: none;">
+		<h4>Entrez votre code PIN</h4>
+		<form id="pinUnlockForm">
+			<input type="password" id="pinInput" maxlength="6" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
+			<button type="button" id="pinUnlockButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Déverrouiller</button>
+		</form>
+	</div>
+    <button id="pinOkButton" style="display: none; font-size: 0.8em; padding: 10px; margin-top: 10px;">OK</button>
   </div>
 </div>
 
@@ -53,7 +78,6 @@
         <form style="margin-bottom:-0.6%" action="https://www.paypal.com/donate" method="post" target="_top">
             <input type="hidden" name="hosted_button_id" value="PG6YTHX6PUHQA" />
             <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-            <img alt="" border="0" src="https://www.paypal.com/en_FR/i/scr/pixel.gif" width="1" height="1" />
         </form>
 
         <button class="navbar-toggler"
