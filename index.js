@@ -2082,6 +2082,7 @@ async function checkAndCopyEditorContent() {
         
         request.onsuccess = (event) => {
           const data = event.target.result;
+		  console.log(data)
           resolve(data);
         };
         
@@ -2129,15 +2130,15 @@ async function getEditorFromLocal(previous_data) {
 		// Parser le contenu en JSON
 		try {
 			parsedData = JSON.parse(editorData);
-			parsedData = parsedData.map((task) => task.description).join("\n");
+			//parsedData = parsedData.map((task) => task.description).join("\n");
 		} catch(e) {
-			//console.log(e)
+			console.log(e)
 			try {
 				const tasks = JSON.parse(editorData);
 				let descriptions = tasks.map((task) => task.description).join("\n");
 				parsedData = JSON.parse(descriptions);
 			} catch(e) {
-				//console.log(e)
+				console.log(e)
 				parsedData = editorData;
 			}
 			
