@@ -1940,8 +1940,10 @@ async function decryptDataWithPIN(encryptedData, pin) {
 				// get v2 editor in indexeddb
 				initialData += "\n" + (await checkAndCopyEditorContent() || "") + "\n"
 				
-				if (! initialData) {
+				if (! initialData.trim()) {
 					landingPage.style.display = "flex";
+				    const inputTask = document.getElementById("inputTask");
+				    inputTask.focus();
 				}
 	
 				mainEditor.session.insert({ row: 0, column: 0 }, initialData);
@@ -1983,77 +1985,196 @@ async function decryptDataWithPIN(encryptedData, pin) {
 			  
 			} else {
 			  alert("Code PIN incorrect. Veuillez réessayer.");
+				const resetDataButton = document.getElementById("resetDataButton");
+				resetDataButton.style.display = "block"; // Afficher le bouton de réinitialisation
+				// Écoutez le clic sur le bouton de réinitialisation
+				resetDataButton.addEventListener("click", function() {
+					
+				  confirm("This will wipe the current database. Continue? ");
+				  
+				  // Ouvrir la base de données "editorDB"
+				  const request = indexedDB.open("editorDB");
+
+				  request.onsuccess = function (event) {
+					const db = event.target.result;
+
+					// Ouvrir le store "editorStore" en mode de transaction en écriture
+					const transaction = db.transaction(["editorStore"], "readwrite");
+					const store = transaction.objectStore("editorStore");
+
+					// Supprimer l'objet "editor-enc" du store "editorStore"
+					store.delete("editor-enc").onsuccess = function () {
+					  alert("La base de données a été supprimé. La session a été réinitialisée.");
+					  location.reload()
+					};
+
+					resetDataButton.style.display = "none"; // Masquer à nouveau le bouton de réinitialisation
+					transaction.oncomplete = function () {
+					  db.close(); // Fermer la base de données
+					};
+				  };
+				});
 			}
 		  } else {
-			alert("Aucun code PIN n'a été créé. Veuillez créer un code PIN.");
+			if (await isIndexedDBEmpty()) {
+				alert("Aucun code PIN n'a été créé. Veuillez créer un code PIN.");
+			} else {
+				// Aucun code dans localstorage mais des données chiffrées existent en base 
+				// Si j'ai fourni un code qui est capable de dechiffrer les données, je sauvegarde ce code 
+
+				async function verifyDecryptionKey(password, encryptedData) {
+				  try {
+					const encryptedDataBuffer = new Uint8Array(encryptedData);
+					const key = await deriveKeyFromPassword(password);
+					// Tente de déchiffrer les données avec la clé fournie
+					const decryptedDataBuffer = await crypto.subtle.decrypt(
+					  { name: "AES-GCM", iv: new Uint8Array(12) },
+					  key,
+					  encryptedDataBuffer
+					);
+
+					// Si le déchiffrement réussit sans erreur, renvoie true
+					return true;
+				  } catch (error) {
+					// Si une erreur se produit pendant le déchiffrement, affiche l'erreur
+					console.error("Erreur de déchiffrement : " + error);
+					return false;
+				  }
+				}
+
+				// Ouvrir la base de données IndexedDB
+				const dbName = "editorDB";
+				const version = 1;
+				// Ouvrir la base de données IndexedDB
+				const db = await openDatabaseSync(dbName, version);
+				
+				const request = indexedDB.open("editorDB");
+
+				request.onsuccess = function (event) {
+					const db = event.target.result;
+
+					// Ouvrir la transaction pour l'objet de stockage contenant les données chiffrées
+					const transaction = db.transaction(["editorStore"], "readonly");
+					const objectStore = transaction.objectStore("editorStore");
+
+					// Récupérer la donnée chiffrée en fonction de la clé
+					const getRequest = objectStore.get("editor-enc");
+
+					getRequest.onsuccess = async function (event) {
+						const encryptedData = event.target.result // Assurez-vous que "editorEnc" correspond au nom de l'attribut contenant les données chiffrées
+
+						// Utilisez votre algorithme de chiffrement pour déchiffrer les données
+						const decryptedData = await verifyDecryptionKey(enteredPin, encryptedData)
+
+						if (decryptedData) {
+							var hashedPin = sha2(enteredPin);
+							localStorage.setItem("hashedPin", hashedPin);
+							unlockSession(enteredPin)
+						} else {
+							alert("Code PIN incorrect. Veuillez réessayer.");
+							const resetDataButton = document.getElementById("resetDataButton");
+							resetDataButton.style.display = "block"; // Afficher le bouton de réinitialisation
+							
+							// Écoutez le clic sur le bouton de réinitialisation
+							resetDataButton.addEventListener("click", function() {
+							  // Ouvrir la base de données "editorDB"
+							  const request = indexedDB.open("editorDB");
+
+							  request.onsuccess = function (event) {
+								const db = event.target.result;
+
+								// Ouvrir le store "editorStore" en mode de transaction en écriture
+								const transaction = db.transaction(["editorStore"], "readwrite");
+								const store = transaction.objectStore("editorStore");
+
+								// Supprimer l'objet "editor-enc" du store "editorStore"
+								store.delete("editor-enc").onsuccess = function () {
+								  alert("La base de données a été supprimé. La session a été réinitialisée.");
+								  location.reload()
+								};
+
+								resetDataButton.style.display = "none"; // Masquer à nouveau le bouton de réinitialisation
+								transaction.oncomplete = function () {
+								  db.close(); // Fermer la base de données
+								};
+							  };
+							});
+						}
+					};
+				};
+			}
 		  }
 		}
 
+	// Utilisez la bibliothèque crypto-js pour générer un hash du PIN
+	function hashPin(pin) {
+		var hashedPin = CryptoJS.SHA256(pin).toString();
+		return hashedPin;
+	}
 
-		function createPin() {
-			showElement("pinConfirmationForm");
-			hideElement("pinCreationForm");
-			var pinConfirmButton = document.getElementById("pinConfirmButton");
-			var pinConfirmField = document.getElementById("pinConfirmInput");
-			pinConfirmButton.addEventListener("click", confirmPin);
-			pinConfirmField.focus();
-		}
 
-		function confirmPin() {
-			var enteredPin = document.getElementById("pinConfirmInput").value;
-			storePin(enteredPin);
-			//alert("Code PIN créé avec succès.");
-			// Code pour la suite de votre application
+function createPin(event) {
+	
+    var pinCreateForm = document.getElementById("pinCreationForm");
+    var pinConfirmForm = document.getElementById("pinConfirmationForm");
 
-			// Une fois que l'utilisateur a créé et confirmé le PIN, masquez la splash page en fondu
-			var splashContainer = document.querySelector(".splash-container");
-			var bkgContainer = document.querySelector(".background-container");
+    var pinCreateInput = document.getElementById("pinCreateInput");
+    var pinConfirmButton = document.getElementById("pinConfirmButton");
+    var pinConfirmField = document.getElementById("pinConfirmInput");
 
-			if (splashContainer) {
-				// Appliquez la classe "fade-out" pour déclencher la transition de fondu
-				splashContainer.classList.add("fade-out");
-				bkgContainer.classList.add("fade-out");
+    var pinToHash = pinCreateInput.value;
 
-				// Attendez la fin de la transition avant de masquer complètement les éléments
-				setTimeout(() => {
-					splashContainer.style.display = "none";
-					bkgContainer.style.display = "none";
-				}, 1500);
-			}
-			
-			unlockSession(enteredPin)
-			
-		}
-		
-		var storedPin = getStoredPin();
-		
+    if (pinToHash.length < 6) {
+        alert("The PIN code must contain at least 6 characters.");
+        return;
+    }
 
-		if (storedPin) {
-			showElement("pinUnlockForm");
-			hideElement("pinCreationForm");
-			var pinUnlockButton = document.getElementById("pinUnlockButton");
-			var pinUnlockField = document.getElementById("pinInput");
-			pinUnlockField.focus();
-			if (pinUnlockButton) {
-				pinUnlockButton.addEventListener("click", unlockSession);
-			}
-		} else {
-			showElement("pinCreationForm");
-			hideElement("pinUnlockForm");
-			var pinCreateButton = document.getElementById("pinCreateButton");
-			var pinCreateField = document.getElementById("pinCreateInput");
-			pinCreateField.focus();
-			var pinConfirmButton = document.getElementById("pinConfirmButton");
+    var hashedPin = hashPin(pinToHash);
 
-			pinCreateButton.addEventListener("click", createPin);
+    var pinCreateButton = document.getElementById("pinCreateButton");
+    pinCreateButton.style.display = "none"; // Masquez le bouton de création
 
-			if (pinConfirmButton) {
-				pinConfirmButton.addEventListener("click", confirmPin);
-			}
-		}
-		
-		setTimeout(() => loadingWheel.style.display = "none", 1000);
-	});
+    pinCreateForm.style.display = "none"; // Masquez le formulaire de création
+
+    pinConfirmForm.style.display = "block"; // Affichez le formulaire de confirmation
+    pinConfirmButton.addEventListener("click", confirmPin);
+    pinConfirmField.focus();
+
+    // Stockez le hash du PIN dans la balise data de pinConfirmationForm
+    pinConfirmForm.dataset.pinHash = hashedPin;
+	
+}
+
+function confirmPin() {
+    var enteredPin = document.getElementById("pinConfirmInput").value;
+    var pinConfirmForm = document.getElementById("pinConfirmationForm");
+    var hashedPin = pinConfirmForm.dataset.pinHash;
+
+    if (hashPin(enteredPin) !== hashedPin) {
+        alert("The second PIN code does not match the first. Please try again.");
+        return;
+    }
+
+    storePin(enteredPin);
+    
+    var splashContainer = document.querySelector(".splash-container");
+    var bkgContainer = document.querySelector(".background-container");
+
+    if (splashContainer) {
+        splashContainer.classList.add("fade-out");
+        bkgContainer.classList.add("fade-out");
+
+        setTimeout(() => {
+            splashContainer.style.display = "none";
+            bkgContainer.style.display = "none";
+        }, 1500);
+    }
+	
+	unlockSession(enteredPin)
+    // Détruire  le hash du PIN dans la balise data de pinConfirmationForm
+    pinConfirmForm.dataset.pinHash = "";
+}
+
 
 
 //})()
@@ -2165,8 +2286,48 @@ async function getEditorFromLocal(previous_data) {
 }
 
 
-// Rcuperate previous linrd versions
-document.addEventListener("DOMContentLoaded", async function () {
+	var storedPin = getStoredPin();
+	var pinUnlockButton = document.getElementById("pinUnlockButton");
+	var pinCreateButton = document.getElementById("pinCreateButton");
+	var pinConfirmButton = document.getElementById("pinConfirmButton");
+	var pinUnlockField = document.getElementById("pinInput");
+	var pinCreateField = document.getElementById("pinCreateInput");
+	var pinConfirmField = document.getElementById("pinConfirmInput");
+
+
+// Recuperate previous linrd versions
+
+	
+	setTimeout(() => loadingWheel.style.display = "none", 1000);
+	
+	// Écoutez la touche "Entrée" pressée sur l'élément d'entrée
+	pinUnlockField.addEventListener("keydown", function(event) {
+	  if (event.key === "Enter" && pinUnlockField.style.display !== "none") {
+		// Si la touche "Entrée" est pressée et le bouton est affiché
+	event.preventDefault()
+	event.stopPropagation()
+		pinUnlockButton.click(); // Déclencher le clic du bouton 
+	  }
+	});
+	pinCreateField.addEventListener("keydown", function(event) {
+	  if (event.key === "Enter" && pinCreateField.style.display !== "none") {
+		// Si la touche "Entrée" est pressée et le bouton est affiché
+	event.preventDefault()
+	event.stopPropagation()
+		pinCreateButton.click(); // Déclencher le clic du bouton
+	  }
+	});
+
+	pinConfirmField.addEventListener("keydown", function(event) {
+	  if (event.key === "Enter" && pinConfirmField.style.display !== "none") {
+		// Si la touche "Entrée" est pressée et le bouton est affiché
+	event.preventDefault()
+	event.stopPropagation()
+		pinConfirmButton.click(); // Déclencher le clic du bouton
+	  }
+	});
+
+
 	
 	const landingPage = document.getElementById("landingPage");
 	landingPage.style.display = "none";
@@ -2178,8 +2339,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 		const inputLength = inputTask.value.length;
 
 		if (inputLength >= 0) {
-			const intensity = 1 - (inputLength - 1) * 0.05;
-			landingPage.style.backgroundColor = `rgba(0, 0, 255, ${intensity})`;
+			const intensity = 1 - (inputLength - 1) * 0.00005;
+			landingPage.style.backgroundColor = `rgba(255, 255, 255, ${intensity})`;
 			
 			if (intensity <= 0) {
 				// Supprime l'élément de la page lorsque l'opacité atteint 0%
@@ -2199,4 +2360,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 			landingPage.remove();
 		}
 	});
+
+
+	if (! await isIndexedDBEmpty()) {
+		showElement("pinUnlockForm");
+		hideElement("pinCreationForm");
+		
+		pinUnlockField.focus();
+		if (pinUnlockButton) {
+			pinUnlockButton.addEventListener("click", () => {
+				unlockSession();
+			});
+		}
+	} else {
+		showElement("pinCreationForm");
+		hideElement("pinUnlockForm");
+		
+		
+		pinCreateField.focus();
+		
+		pinCreateButton.addEventListener("click", createPin);
+
+		if (pinConfirmButton) {
+			// Écoutez la touche "Entrée" pressée sur l'élément d'entrée
+			pinConfirmButton.addEventListener("click", confirmPin);
+		}
+	}
+	
+
 });
