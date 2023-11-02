@@ -209,14 +209,13 @@ input.disabled {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 255, 1);
+    background-color: rgba(255, 255, 255, 1);
     z-index: 9997;
 }
 
 .question {
     font-size: 18px;
     margin-bottom: 10px;
-    color: white;
 }
 
 .task-input {
@@ -391,3 +390,4 @@ textarea {
     transform: scale(1); /* Réinitialiser le zoom à 1 */
     min-height: 420px;
 }
+
