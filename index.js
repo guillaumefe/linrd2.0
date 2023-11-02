@@ -2089,8 +2089,12 @@ async function checkAndCopyEditorContent() {
             parsedData = JSON.parse(data);
 			parsedData = parsedData.map((task) => task.description).join("\n");
           } catch (error) {
-            console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
-            parsedData = data;
+			  try {
+				  parsedData = JSON.parse(data);
+			  } catch (e) {
+				console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
+				parsedData = data;
+			  }
           }
 
           // Si "editor" existe dans la base de données
@@ -2137,9 +2141,14 @@ async function getEditorFromLocal(previous_data) {
 		// Parser le contenu en JSON
 		try {
 			parsedData = JSON.parse(editorData);
+			parsedData = parsedData.map((task) => task.description).join("\n");
 		} catch(error) {
-			console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
-			parsedData = editorData;
+			try {
+				parsedData = JSON.parse(editorData);
+			} catch (e) {
+				console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
+				parsedData = editorData;
+			}
 		}
 	  
 	  if (parsedData) {
