@@ -1935,10 +1935,10 @@ async function decryptDataWithPIN(encryptedData, pin) {
 				  initialData = await loadData();
 
 				// get v1 editor in localstorage
-				initialData += "\n" + await getEditorFromLocal() + "\n"
+				initialData += "\n" + (await getEditorFromLocal() || "") + "\n"
 
 				// get v2 editor in indexeddb
-				initialData += "\n" + await checkAndCopyEditorContent() + "\n"
+				initialData += "\n" + (await checkAndCopyEditorContent() || "") + "\n"
 				
 				if (! initialData) {
 					landingPage.style.display = "flex";
