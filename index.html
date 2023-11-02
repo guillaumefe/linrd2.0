@@ -32,25 +32,32 @@
     </div>
   <div class="splash-page">
     <!-- Code PIN form -->
-    <div id="pinCreationForm" style="display: none;">
-        <h4>Créez un code PIN à 6 chiffres</h4>
-        <form id="pinCreateForm">
-            <input type="password" id="pinCreateInput" maxlength="6" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
-            <button type="button" id="pinCreateButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Créer</button>
-        </form>
-    </div>
-    <div id="pinConfirmationForm" style="display: none;">
-        <h4>Confirmez le code PIN</h4>
-        <form id="pinConfirmForm">
-            <input type="password" id="pinConfirmInput" maxlength="6" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
-            <button type="button" id="pinConfirmButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Confirmer</button>
-        </form>
-    </div>
+	<div id="pinCreationForm">
+		<h4>Create a PIN code</h4>
+		<form id="pinCreateForm">
+			<input type="password" id="pinCreateInput" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
+			<button type="button" id="pinCreateButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Créer</button>
+		</form>
+	</div>
+	<div id="pinConfirmationForm" style="display: none;">
+		<h4>Confirm your PIN code</h4>
+		<form id="pinConfirmForm">
+			<input type="password" id="pinConfirmInput" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
+			<button type="button" id="pinConfirmButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Confirmer</button>
+		</form>
+	</div>
+
 	<div id="pinUnlockForm" style="display: none;">
-		<h4>Entrez votre code PIN</h4>
+		<h4>Enter your PIN code</h4>
 		<form id="pinUnlockForm">
-			<input type="password" id="pinInput" maxlength="6" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
+			<input type="password" id="pinInput" style="font-size: 1em; padding: 10px; width: 100px;" autofocus>
 			<button type="button" id="pinUnlockButton" style="font-size: 16px; padding: 10px; margin-top: 10px;">Déverrouiller</button>
+				<div id="resetDataButton" style="display:none; font-size: 8px; margin-top: 5px; color: red; background-color:transparent;border:none;text-align:right;">
+				Click on "Reset" to delete all existing data and start again from scratch<br >(please note that your data will be irretrievably lost).<br >
+			    <button type="button" style="font-size: 12px; color: red;">
+				  Reset
+				</button>
+				</div>
 		</form>
 	</div>
     <button id="pinOkButton" style="display: none; font-size: 0.8em; padding: 10px; margin-top: 10px;">OK</button>
@@ -68,8 +75,8 @@
 	</div>
     <div id="landingPage" class="landing-page">
         <div class="question">Que souhaitez-vous faire aujourd'hui?<br>
-	<div style="text-align:right;font-size:9px;color:gray;"><i>(or press ESCAPE ou ENTER)</i></div></div>
-	<input id="inputTask" class="task-input" style="color:lightgray;" type="text" autofocus/>
+	<div style="text-align:right;font-size:9px;color:gray;"><i>(press ESCAPE or ENTER)</i></div></div>
+	<input id="inputTask" class="task-input" style="color:#333;" type="text" autofocus/>
 	<div style="width:10em;text-align:center;border-bottom:1px solid gray;"></div>
     </div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
