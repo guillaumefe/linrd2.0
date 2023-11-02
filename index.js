@@ -139,7 +139,7 @@ function closeModal() {
 	});
 
 	// ATTACH EVENTS TO DOM
-	document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
+	//document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
 	document.getElementById('loadMoreInbox').addEventListener('click', () => loadMoreTasks('inbox'));
 	document.getElementById('loadMoreDone').addEventListener('click', () => loadMoreTasks('done'));
 	document.getElementById('loadMoreDoc').addEventListener('click', () => loadMoreTasks('doc'));
@@ -686,6 +686,113 @@ async function decryptDataWithPIN(encryptedData, pin) {
 		}
 		return attributes;
 	}
+	
+function activateDarkMode() {
+
+	const bgLight = document.querySelectorAll('.bg-light');
+    // Parcourez tous les éléments et ajoutez la classe "dark"
+    bgLight.forEach((element) => {
+        element.classList.add("bg-dark");
+    });
+	
+	const navLink = document.querySelectorAll('.nav-link');
+    // Parcourez tous les éléments et ajoutez la classe "dark"
+    navLink.forEach((element) => {
+        element.classList.add("matrixpolice");
+    });
+	
+	const navbarToggler = document.getElementById('navbarToggler')
+	navbarToggler.classList.add("matrixborder");
+	
+	const popupEditor = document.getElementById('popup-editor')
+	popupEditor.classList.add("matrixpolice");
+	
+	const sourceCodeLink = document.getElementById('source-code-link')
+	sourceCodeLink.classList.add("matrixpolice");
+	sourceCodeLink.style.opacity = 0.1
+	
+	const search = document.getElementById('search-input')
+	search.classList.add("dark-mode");
+	
+	const paypal = document.getElementById('paypal')
+	paypal.style.opacity = 0.1
+	
+	const body = document.body;
+    body.classList.add("dark-mode");
+	
+	const taskElements = document.querySelectorAll('.task');
+    // Parcourez tous les éléments et ajoutez la classe "dark"
+    taskElements.forEach((element) => {
+        element.classList.add("dark-mode");
+    });
+	
+	
+	const themeDropdown = document.getElementById('themeDropdown')
+	themeDropdown.classList.add("matrixpolice");
+	
+	const logo = document.getElementById('logo')
+	logo.style.opacity = 0.1
+	
+	const header = document.getElementById('header')
+	header.classList.add("matrixborder");
+	
+	localStorage.setItem('editorTheme', 'ace/theme/monokai');
+	
+}
+
+function activateLightMode() {
+	const bgLight = document.querySelectorAll('.bg-light');
+    // Parcourez tous les éléments et ajoutez la classe "dark"
+    bgLight.forEach((element) => {
+        element.classList.remove("bg-dark");
+    });
+	
+	const navLink = document.querySelectorAll('.nav-link');
+    // Parcourez tous les éléments et ajoutez la classe "dark"
+    navLink.forEach((element) => {
+		element.classList.remove("matrixpolice");
+    });
+	
+	
+	const navbarToggler = document.getElementById('navbarToggler')
+	navbarToggler.style.border = "1px solid lightgray";
+	
+	const popupEditor = document.getElementById('popup-editor')
+	popupEditor.classList.remove('matrixpolice');
+	
+	const sourceCodeLink = document.getElementById('source-code-link')
+	sourceCodeLink.classList.remove('matrixpolice');
+	sourceCodeLink.style.opacity = 1
+	
+	const search = document.getElementById('search-input')
+	search.classList.remove("dark-mode");
+	
+	const paypal = document.getElementById('paypal')
+	paypal.style.opacity = 0.7
+	
+	const body = document.body;
+    body.classList.remove("dark-mode");
+	
+	const taskElements = document.querySelectorAll('.task');
+    // Parcourez tous les éléments et ajoutez la classe "dark"
+    taskElements.forEach((element) => {
+        element.classList.remove("dark-mode");
+
+    });
+
+	
+	const themeDropdown = document.getElementById('themeDropdown')
+	themeDropdown.classList.remove("matrixpolice");	
+	
+	const logo = document.getElementById('logo')
+	logo.style.opacity = 1
+	
+	const header = document.getElementById('header')
+	header.classList.remove("matrixborder");
+	
+	localStorage.setItem('editorTheme', 'ace/theme/github');
+}
+
 
 	function toggleTheme(theme) {
 		let newTheme;
@@ -693,13 +800,16 @@ async function decryptDataWithPIN(encryptedData, pin) {
 		if (theme) {
 			if (theme === "dark") {
 				newTheme = "ace/theme/monokai";
+				activateDarkMode()
 			} else {
 				newTheme = "ace/theme/github";
+				activateLightMode()
 			}
 			
 		} else {
 			theme = mainEditor.getTheme();
 			newTheme = theme === "ace/theme/monokai" ? "ace/theme/github" : "ace/theme/monokai";
+			activateLightMode()
 		}
 		mainEditor.setTheme(newTheme);
 		popupEditor.setTheme(newTheme);
@@ -2387,5 +2497,16 @@ async function getEditorFromLocal(previous_data) {
 		}
 	}
 	
+// Fonction pour charger le thème actuel depuis localStorage
+function loadTheme() {
+    const editorTheme = localStorage.getItem('editorTheme');
 
+    if (editorTheme === 'ace/theme/monokai') {
+        activateDarkMode();
+    } else {
+        activateLightMode();
+    }
+}
+
+loadTheme();
 });
