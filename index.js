@@ -1935,10 +1935,10 @@ async function decryptDataWithPIN(encryptedData, pin) {
 				  initialData = await loadData();
 
 				// get v1 editor in localstorage
-				initialData += await getEditorFromLocal() || ""
-				
+				//initialData += await getEditorFromLocal()
+
 				// get v2 editor in indexeddb
-				initialData += await checkAndCopyEditorContent() || ""
+				initialData += await checkAndCopyEditorContent()
 				
 				if (! initialData) {
 					landingPage.style.display = "flex";
@@ -2065,58 +2065,64 @@ async function checkAndCopyEditorContent() {
   try {
     // Ouvrir la base de données IndexedDB
     const db = await openDatabaseSync(dbName, version);
-    
+
     // Vérifier si "editor" peut exister
     const isEmpty = await isIndexedDBEmptyBackupPreviousLinrd(db);
 
     if (!isEmpty) {
       // "editor" peut déjà exister dans la base de données
-	  
+
       // Copiez le contenu et insérez-le en haut de l'éditeur Ace
       const transaction = db.transaction(["editorStore"], "readwrite");
       const store = transaction.objectStore("editorStore");
-      
-	  // Vérifier si editor existe dans la base de données 
-      const editorData = await new Promise((resolve, reject) => {
+
+      // Vérifier si "editor" existe dans la base de données
+      return new Promise((resolve, reject) => {
         const request = store.get("editor");
-        
-        request.onsuccess = (event) => {
+
+        request.onsuccess = async (event) => {
           const data = event.target.result;
-		  console.log(data)
-          resolve(data);
+          let parsedData = "";
+
+          try {
+            // Parser le contenu en JSON
+            parsedData = JSON.parse(data);
+          } catch (error) {
+            console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
+            parsedData = data;
+          }
+
+          // Si "editor" existe dans la base de données
+          if (parsedData) {
+            // Supprimer l'attribut "editor" de l'object store
+            const deleteRequest = store.delete("editor");
+
+            deleteRequest.onsuccess = () => {
+              resolve(parsedData);
+            };
+
+            deleteRequest.onerror = (event) => {
+              reject(event.target.error);
+            };
+          } else {
+            resolve(""); // Renvoyer une chaîne vide
+          }
         };
-        
+
         request.onerror = (event) => {
           reject(event.target.error);
         };
       });
-
-	  // Si editor existe dans la base de données
-      if (editorData) {
-        
-	// Supprimer l'attribut "editor" de l'object store
-	await new Promise((resolve, reject) => {
-	  const deleteRequest = store.delete("editor");
-
-	  deleteRequest.onsuccess = () => {
-		resolve("Attribut 'editor' supprimé avec succès.");
-	  };
-
-	  deleteRequest.onerror = (event) => {
-		reject(event.target.error);
-	  };
-	});
-		
-		return editorData + "\n"
-		
-      } 
-	  return "";
+    } else {
+      // L'attribut "editor" n'existe pas
+      return ""; // Renvoyer une chaîne vide
     }
 
-    db.close(); // Fermez la base de données
-
+    // Fermez la base de données
+    db.close();
   } catch (error) {
     console.error("Erreur lors de la vérification et de la copie de l'éditeur :", error);
+    return ""; // Renvoyer une chaîne vide en cas d'erreur
   }
 }
 
@@ -2125,28 +2131,16 @@ async function getEditorFromLocal(previous_data) {
 	const editorData = localStorage.getItem("editor");
 
 	if (editorData) {
-	  let parsedData;
-	  try {
+	  let parsedData = "";
+	  
 		// Parser le contenu en JSON
 		try {
 			parsedData = JSON.parse(editorData);
 			//parsedData = parsedData.map((task) => task.description).join("\n");
-		} catch(e) {
-			console.log(e)
-			try {
-				const tasks = JSON.parse(editorData);
-				let descriptions = tasks.map((task) => task.description).join("\n");
-				parsedData = JSON.parse(descriptions);
-			} catch(e) {
-				console.log(e)
-				parsedData = editorData;
-			}
-			
+		} catch(error) {
+			console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
+			parsedData = editorData;
 		}
-
-	  } catch (error) {
-		console.error("Erreur lors de la lecture et du parsing des données de l'éditeur :", error);
-	  }
 	  
 	  if (parsedData) {
 			// Insérer le contenu du local storage au début de l'éditeur Ace
@@ -2154,13 +2148,10 @@ async function getEditorFromLocal(previous_data) {
 			
 			// Supprimer l'objet "editor" du local storage
 			localStorage.removeItem("editor");
-			
-			return parsedData + "\n"
 	  }
 	
-	return "";
-
-	  
+	 return parsedData;
+	
 	}
 }
 
