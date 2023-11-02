@@ -307,6 +307,7 @@ input.disabled {
 .loading-text {
     margin-top: 10px;
     font-weight: bold;
+	font-size: 2em;
 }
 
 @media (max-width: 768px) {
@@ -345,12 +346,12 @@ input.disabled {
   background-color: white;
   padding: 20px;
   border-radius: 5px;
-  text-align: center;
+  text-align: right;
   z-index: 11000;
+  width:80%;
 }
 
-.splash-page .loading-text {
-  font-size: 24px;
+.loading-text {
   font-weight: bold;
   animation: revealText 2s linear forwards;
 }
