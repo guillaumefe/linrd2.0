@@ -1337,7 +1337,7 @@ function activateLightMode() {
 		//const openModalButton = createButton("Next action", "white", () => openModal(task.context.map((ctx) => ctx).join("\n")) + task.clean_description));
 		
 		const openModalButton = createButton(
-		  "Edit",
+		  "Next move",
 		  "white",
 		  () => {
 			const spaces = " ".repeat(task.indent); // Crée une chaîne d'espaces
