@@ -415,7 +415,7 @@ textarea {
 }
 
 .matrixpolice:not(.ace_line) {
-	color:lightgreen !important;
+	color:lightgreen;
 }
 
 
