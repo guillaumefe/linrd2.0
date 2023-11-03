@@ -706,6 +706,12 @@ function activateDarkMode() {
 	
 	const popupEditor = document.getElementById('popup-editor')
 	popupEditor.classList.add("matrixpolice");
+	// Sélectionnez tous les enfants de popup-editor
+	const children = popupEditor.querySelectorAll('*');	
+	// Parcourez tous les enfants et attribuez-leur une couleur noire
+	children.forEach((child) => {
+	    child.style.color = 'white';
+	});
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.add("matrixpolice");
@@ -758,9 +764,13 @@ function activateLightMode() {
 	const navbarToggler = document.getElementById('navbarToggler')
 	navbarToggler.style.border = "1px solid lightgray";
 	
-	const popupEditor = document.getElementById('popup-editor')
-	popupEditor.classList.remove('matrixpolice');
-	popupEditor.style.color = 'black';
+	popupEditor.classList.add("matrixpolice");
+	// Sélectionnez tous les enfants de popup-editor
+	const children = popupEditor.querySelectorAll('*');	
+	// Parcourez tous les enfants et attribuez-leur une couleur noire
+	children.forEach((child) => {
+	    child.style.color = 'black';
+	});
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.remove('matrixpolice');
