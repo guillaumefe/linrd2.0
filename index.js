@@ -764,7 +764,7 @@ function activateLightMode() {
 	const navbarToggler = document.getElementById('navbarToggler')
 	navbarToggler.style.border = "1px solid lightgray";
 	
-	popupEditor.classList.add("matrixpolice");
+	popupEditor.classList.remove("matrixpolice");
 	// Sélectionnez tous les enfants de popup-editor
 	const children = popupEditor.querySelectorAll('*');	
 	// Parcourez tous les enfants et attribuez-leur une couleur noire
