@@ -399,19 +399,17 @@ textarea {
     min-height: 420px;
 }
 
+
+
 /* Styles pour le mode sombre */
-.dark-mode *:not([class^="ace"]){
+.dark-mode *:not([class^="ace"]) {
 	background-color:#000 !important;
-    color: lightgreen; /* Couleur de texte claire */
+	color: lightgreen!important; 
 	
 }
 
 .ace_line {
-	color: lightgreen; /* Couleur de texte claire *
-}
-
-.dark-mode a {
-    color: #55a7f7; /* Liens dans le mode sombre */
+	color: black!important; /* Couleur de texte claire */
 }
 
 .matrixpolice {
