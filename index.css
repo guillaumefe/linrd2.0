@@ -414,7 +414,7 @@ textarea {
     color: #55a7f7; /* Liens dans le mode sombre */
 }
 
-.matrixpolice {
+.matrixpolice:not([class^="ace"] {
 	color:lightgreen !important;
 }
 
