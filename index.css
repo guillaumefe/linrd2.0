@@ -408,6 +408,22 @@ textarea {
 	
 }
 
+.dark-mode  #popup-editor {
+    background-color:#000;
+}
+
+.dark-mode .ace_line {
+	color: lightgreen!important; /* Couleur de texte claire */
+}
+
+.dark-mode .ace_gutter-cell {
+    background-color:#000;
+}
+
+.dark-mode .ace_gutter-layer {
+    background-color:#000;
+}
+
 .ace_line {
 	color: black!important; /* Couleur de texte claire */
 }
