@@ -735,7 +735,8 @@ function activateDarkMode() {
 	
 	const header = document.getElementById('header')
 	header.classList.add("matrixborder");
-	
+
+	editor.setTheme("ace/theme/monokai"); // Thème de base Monokai
 	localStorage.setItem('editorTheme', 'ace/theme/monokai');
 	
 }
@@ -790,7 +791,8 @@ function activateLightMode() {
 	
 	const header = document.getElementById('header')
 	header.classList.remove("matrixborder");
-	
+
+	editor.setTheme("ace/theme/github");
 	localStorage.setItem('editorTheme', 'ace/theme/github');
 }
 
