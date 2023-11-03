@@ -759,6 +759,7 @@ function activateLightMode() {
 	
 	const popupEditor = document.getElementById('popup-editor')
 	popupEditor.classList.remove('matrixpolice');
+	popupEditor.style.color = 'black';
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.remove('matrixpolice');
