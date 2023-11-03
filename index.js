@@ -704,14 +704,20 @@ function activateDarkMode() {
 	const navbarToggler = document.getElementById('navbarToggler')
 	navbarToggler.classList.add("matrixborder");
 	
-	const popupEditor = document.getElementById('popup-editor')
-	popupEditor.classList.add("matrixpolice");
+	const popupEditor = document.getElementById('popup-editor');
+	popupEditor.classList.remove("matrixpolice");
 	// Sélectionnez tous les enfants de popup-editor
-	const children = popupEditor.querySelectorAll('*');	
-	// Parcourez tous les enfants et attribuez-leur une couleur noire
-	children.forEach((child) => {
-	    child.style.color = 'white';
-	});
+	function applyBlackColorRecursively(element) {
+	    element.style.color = 'lightgreen'; // Appliquer la couleur noire à l'élément actuel
+	
+	    const children = element.children; // Sélectionner les enfants de l'élément actuel
+	
+	    // Parcourir les enfants de manière récursive
+	    for (let i = 0; i < children.length; i++) {
+	        applyBlackColorRecursively(children[i]);
+	    }
+	}
+	applyBlackColorRecursively(popupEditor);
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.add("matrixpolice");
@@ -763,14 +769,21 @@ function activateLightMode() {
 	
 	const navbarToggler = document.getElementById('navbarToggler')
 	navbarToggler.style.border = "1px solid lightgray";
-	
+
+	const popupEditor = document.getElementById('popup-editor');
 	popupEditor.classList.remove("matrixpolice");
 	// Sélectionnez tous les enfants de popup-editor
-	const children = popupEditor.querySelectorAll('*');	
-	// Parcourez tous les enfants et attribuez-leur une couleur noire
-	children.forEach((child) => {
-	    child.style.color = 'black';
-	});
+	function applyBlackColorRecursively(element) {
+	    element.style.color = 'black'; // Appliquer la couleur noire à l'élément actuel
+	
+	    const children = element.children; // Sélectionner les enfants de l'élément actuel
+	
+	    // Parcourir les enfants de manière récursive
+	    for (let i = 0; i < children.length; i++) {
+	        applyBlackColorRecursively(children[i]);
+	    }
+	}
+	applyBlackColorRecursively(popupEditor);
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.remove('matrixpolice');
