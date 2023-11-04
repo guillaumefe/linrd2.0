@@ -139,7 +139,7 @@ function closeModal() {
 	});
 
 	// ATTACH EVENTS TO DOM
-	//document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
+	document.getElementById('toggleEditorButton').addEventListener('click', toggleEditor);
 	document.getElementById('loadMoreInbox').addEventListener('click', () => loadMoreTasks('inbox'));
 	document.getElementById('loadMoreDone').addEventListener('click', () => loadMoreTasks('done'));
 	document.getElementById('loadMoreDoc').addEventListener('click', () => loadMoreTasks('doc'));
