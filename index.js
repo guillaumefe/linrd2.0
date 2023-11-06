@@ -1,6 +1,9 @@
 let popupEditor = ace.edit("popup-editor");
 let mainEditor = ace.edit("editor");
 
+let lastValidDate = null;
+let lastValidTime = null;
+
 function openModal(content) {
 	popupEditor.setValue("");
 	document.getElementById("modal").style.display = "block";
@@ -80,7 +83,7 @@ function closeModal() {
 	let initialData = null;
 	let savedTasks = null;
 	let searchTimeoutId;
-	let user_password = "secret"	
+	let user_password;
 
 	const searchField = document.getElementById('search-input');
 	searchField.value = "";
@@ -259,6 +262,7 @@ async function loadData() {
 
           // Parsez les données JSON déchiffrées
           const tasks = JSON.parse(decryptedData);
+		  // console.log(tasks)
           let descriptions = tasks.map((task) => task.description).join("\n");
           resolve(descriptions);
         } catch (error) {
@@ -496,6 +500,8 @@ async function decryptDataWithPIN(encryptedData, pin) {
 		dateInput.classList.add("disabled");
 		durationInput.disabled = false;
 		durationInput.classList.remove("disabled");
+		
+		
 	}
 	function toggleEditor() {
 		var editor = document.getElementById('editor');
@@ -657,6 +663,10 @@ async function decryptDataWithPIN(encryptedData, pin) {
 		} else {
 			delayButton.disabled = true;
 		}
+		
+		lastValidDate = dateInput.value;
+		lastValidTime = durationInput.value;
+
 	}
 
 	function cleanUpContext(context_array) {
@@ -704,8 +714,8 @@ function activateDarkMode() {
 	const navbarToggler = document.getElementById('navbarToggler')
 	navbarToggler.classList.add("matrixborder");
 	
-	const popupEditor = document.getElementById('popup-editor');
-	popupEditor.classList.remove("matrixpolice");
+	const popupEditorHTML = document.getElementById('popup-editor');
+	popupEditorHTML.classList.remove("matrixpolice");
 	// Sélectionnez tous les enfants de popup-editor
 	function applyBlackColorRecursively(element) {
 	    element.style.color = 'lightgreen'; // Appliquer la couleur noire à l'élément actuel
@@ -717,7 +727,7 @@ function activateDarkMode() {
 	        applyBlackColorRecursively(children[i]);
 	    }
 	}
-	applyBlackColorRecursively(popupEditor);
+	applyBlackColorRecursively(popupEditorHTML);
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.add("matrixpolice");
@@ -748,7 +758,7 @@ function activateDarkMode() {
 	const header = document.getElementById('header')
 	header.classList.add("matrixborder");
 
-	editor.setTheme("ace/theme/monokai"); // Thème de base Monokai
+	popupEditor.setTheme("ace/theme/monokai"); // Thème de base Monokai
 	localStorage.setItem('editorTheme', 'ace/theme/monokai');
 	
 }
@@ -770,8 +780,8 @@ function activateLightMode() {
 	const navbarToggler = document.getElementById('navbarToggler')
 	navbarToggler.style.border = "1px solid lightgray";
 
-	const popupEditor = document.getElementById('popup-editor');
-	popupEditor.classList.remove("matrixpolice");
+	const popupEditorHTML = document.getElementById('popup-editor');
+	popupEditorHTML.classList.remove("matrixpolice");
 	// Sélectionnez tous les enfants de popup-editor
 	function applyBlackColorRecursively(element) {
 	    element.style.color = 'black'; // Appliquer la couleur noire à l'élément actuel
@@ -783,7 +793,7 @@ function activateLightMode() {
 	        applyBlackColorRecursively(children[i]);
 	    }
 	}
-	applyBlackColorRecursively(popupEditor);
+	applyBlackColorRecursively(popupEditorHTML);
 	
 	const sourceCodeLink = document.getElementById('source-code-link')
 	sourceCodeLink.classList.remove('matrixpolice');
@@ -815,7 +825,7 @@ function activateLightMode() {
 	const header = document.getElementById('header')
 	header.classList.remove("matrixborder");
 
-	editor.setTheme("ace/theme/github");
+	popupEditor.setTheme("ace/theme/github");
 	localStorage.setItem('editorTheme', 'ace/theme/github');
 }
 
@@ -991,6 +1001,7 @@ function activateLightMode() {
 	}
 
 	async function generateTasks(editorContent) {
+		
 		if (!editorContent) {
 			document.getElementById("loadingOverlay").style.display = "none";
 			return handleNoContent();
@@ -1254,38 +1265,46 @@ function activateLightMode() {
 		return false;
 	}
 
-	function getTaskDetails(line, taskId, index, lines) {
-		const indent = getIndent(line);
-		const statusSymbol = getStatusSymbol(line);
-		let description = getDescription(line);
-		const attributes = extractAttributes(description);
+function getTaskDetails(line, taskId, index, lines) {
+  const indent = getIndent(line);
+  const statusSymbol = getStatusSymbol(line);
+  let description = getDescription(line);
+  const attributes = extractAttributes(description);
 
-		const atimeMatch = attributes.atime ? attributes.atime.match(/\(ctime=(.*)\)$/) : null;
-		let existingAtime = atimeMatch ? atimeMatch[1] : null;
-		let atimeSet = false;
+  const atimeMatch = attributes.atime ? attributes.atime.match(/\(ctime=(.*)\)$/) : null;
+  let existingAtime = atimeMatch ? atimeMatch[1] : null;
+  let atimeSet = false;
 
-		if (!existingAtime) {
-			const now = new Date().getTime();
-			const timestamp = now;
-			existingAtime = timestamp;
-			atimeSet = true;
-		}
+  if (!existingAtime) {
+    const now = new Date().getTime();
+    const timestamp = now;
+    existingAtime = timestamp;
+    atimeSet = true;
+  }
 
-		return {
-			description: attributes.description || description,
-			clean_description: cleanUpDescription(attributes.description || description),
-			is_project: isProject(line, index, lines),
-			status: statusSymbol,
-			context: [],
-			line : line,
-			indent,
-			id: `${taskId}`,
-			atime: existingAtime,
-			attributes: attributes,
-			clean_context: "",
-			delay: attributes.delay || null,
-		};
-	}
+  // Vérifiez si la ligne contient le mot "urgent" et définissez l'attribut "urgent" en conséquence.
+  const urgent = / *\(\s*urgent\s*\) */.test(line);
+  const simple = / *\(\s*simple\s*\) */.test(line);
+
+  return {
+    description: attributes.description || description,
+    clean_description: cleanUpDescription(attributes.description || description),
+    is_project: isProject(line, index, lines),
+    status: statusSymbol,
+    context: [],
+    urgent: urgent,
+	simple: simple,
+    line: line,
+	index : index,
+    indent,
+    id: `${taskId}`,
+    atime: existingAtime,
+    attributes: attributes,
+    clean_context: "",
+    delay: attributes.delay || null,
+  };
+}
+
 
 	function updateLoadMoreButtonVisibility(columnId) {
 		let totalTasks;
@@ -1347,24 +1366,61 @@ function activateLightMode() {
 			popupEditor.resize();
 		}
 
-		taskElement.appendChild(createButton('Cancel', 'red', () => handleCancelButtonClick(task)));
-		taskElement.appendChild(createButton('Done', 'green', () => handleDoneButtonClick(task)));
-		taskElement.appendChild(createButton('Await', 'blue', () => handleAwaitButtonClick(task)));
-		taskElement.appendChild(createButton('Delay', 'yellow', () => handleDelayButtonClick(task)));
-		taskElement.appendChild(createButton('Doc', 'dark-blue', () => handleDocButtonClick(task)));
-
+		if (!task.urgent) {
+			const cancel_button = createButton('Cancel', 'red', () => handleCancelButtonClick(task));
+			cancel_button.style.fontSize = '15px';
+			cancel_button.style.padding = '4px 8px';
+			taskElement.appendChild(cancel_button);
+		}
+		
+		const done_button = createButton('Done', 'green', () => handleDoneButtonClick(task))
+			done_button.style.fontSize = '15px';
+			done_button.style.padding = '4px 8px';
+		taskElement.appendChild(done_button);
+		
+		const await_button = createButton('Await', 'blue', () => handleAwaitButtonClick(task))
+			await_button.style.fontSize = '15px';
+			await_button.style.padding = '4px 8px';
+		taskElement.appendChild(await_button);
+		
+		const delay_button = createButton('Delay', 'yellow', () => handleDelayButtonClick(task))
+			delay_button.style.fontSize = '15px';
+			delay_button.style.padding = '4px 8px';
+		taskElement.appendChild(delay_button);
+		
+		if (!task.urgent) {
+			const doc_button = createButton('Doc', 'dark-blue', () => handleDocButtonClick(task))
+			doc_button.style.fontSize = '15px';
+			doc_button.style.padding = '4px 8px';
+			taskElement.appendChild(doc_button);
+		}
+		
 		const taskTextElement = createTaskTextElement(task);
 		taskTextElement.className = 'task-text-action';
-
 		taskTextElement.onclick = () => highlightTaskLine(task);
 		taskElement.appendChild(taskTextElement);
 		//taskElement.appendChild(createButton('Next action', 'white', () => handleDocButtonClick(task)));
 		//for (var i = 1; i <= task.indent; i++) console.log(i);
 		//const openModalButton = createButton("Next action", "white", () => openModal(task.context.map((ctx) => ctx).join("\n")) + task.clean_description));
-		
+	
+ // Afficher la liste des noms de fichiers
+  if (task.links && task.links.length > 0) {
+    const filesList = document.createElement('ul');
+
+    for (const link of task.links) {
+      const fileName = link.title;
+      const listItem = document.createElement('li');
+      listItem.textContent = fileName;
+      filesList.appendChild(listItem);
+    }
+
+    taskElement.appendChild(filesList);
+  }
+  
+	  
 		const openModalButton = createButton(
 		  "Next move",
-		  "white",
+		  "green",
 		  () => {
 			const spaces = " ".repeat(task.indent); // Crée une chaîne d'espaces
 			const descriptionWithIndent = spaces + task.clean_description; // Ajoute les espaces à la description
@@ -1372,7 +1428,108 @@ function activateLightMode() {
 		  }
 		);
 		
-		taskElement.appendChild(openModalButton);
+			openModalButton.style.fontSize = '14px';
+			openModalButton.style.padding = '4px 8px';
+		
+		if (!task.simple)
+			taskElement.appendChild(openModalButton);
+	
+	  // Créez un conteneur pour les documents
+	  const documentsContainer = document.createElement('div');
+	  documentsContainer.id = 'documents-container'; // Donnez un ID au conteneur
+	  taskElement.appendChild(documentsContainer);	
+
+		
+	  // Bouton pour créer un document
+	  const createDocumentButton = createButton('Create Document', 'gray', () => createDocxDocument(task));
+		createDocumentButton.style.fontSize = '12px';
+		createDocumentButton.style.padding = '4px 8px';
+	  taskElement.appendChild(createDocumentButton);
+
+	  // Bouton pour créer un tableur
+	  const createSpreadsheetButton = createButton('Create Spreadsheet', 'gray', () => createExcelDocument(task));
+		createSpreadsheetButton.style.fontSize = '12px';
+		createSpreadsheetButton.style.padding = '4px 8px';
+	  taskElement.appendChild(createSpreadsheetButton);
+
+	  // Bouton pour créer un support de présentation
+	  const createPresentationButton = createButton('Create Presentation', 'gray', () => createPptxDocument(task));
+		createPresentationButton.style.fontSize = '12px';
+		createPresentationButton.style.padding = '4px 8px';
+	  taskElement.appendChild(createPresentationButton);
+
+	  // Lien vers le fichier créé (initiallement caché)
+	  const documentLink = document.createElement("a");
+	  documentLink.style.display = "none"; // Caché par défaut
+	  taskElement.appendChild(documentLink);
+		
+function createCheckbox(labelText, backgroundColor, checked, onChangeCallback) {
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.style.backgroundColor = backgroundColor; // Définissez la couleur de fond ici.
+  checkbox.checked = checked; // Cochez la case si task.urgent est true.
+  const label = document.createElement("label");
+  label.textContent = labelText;
+ 
+  
+  checkbox.style.width = "0.6em"
+  checkbox.style.height = "0.6em"
+  label.style.fontSize = "0.7em"
+  checkbox.style.marginRight = "3px";
+  
+
+  const container = document.createElement("div");
+  container.appendChild(checkbox);
+  container.appendChild(label);
+
+  checkbox.addEventListener("change", () => onChangeCallback(checkbox));
+
+  return container;
+}
+		
+		const urgentCheckbox = createCheckbox(
+		  "Is urgent?",
+		  "white",
+		  task.urgent,
+		  (checkbox) => {
+			// Mettez à jour task.urgent avec la valeur de la case à cocher.
+			task.urgent = checkbox.checked;
+			// Mettez à jour le contenu de la ligne en fonction de l'état de la case à cocher.
+			if (task.urgent) {
+			  // Si la case est cochée, ajoutez "(urgent)" à la fin de la ligne.
+			  updateLineContent(task.index, task.line + " (urgent)");
+			} else {
+			  // Si la case est décochée, retirez "(urgent)" de la ligne.
+			  updateLineContent(task.index, task.line.replace(/\s*\(\s*urgent\s*\)\s*/g, ''));
+
+			}
+		  }
+		);
+
+		// Ajoutez la case à cocher à votre élément de tâche.
+		taskTextElement.appendChild(urgentCheckbox);
+
+		const simpleCheckbox = createCheckbox(
+		  "Is easy ?",
+		  "white",
+		  task.simple,
+		  (checkbox) => {
+			// Mettez à jour task.simple avec la valeur de la case à cocher.
+			task.simple = checkbox.checked;
+			// Mettez à jour le contenu de la ligne en fonction de l'état de la case à cocher.
+			if (task.simple) {
+			  // Si la case est cochée, ajoutez "(simple)" à la fin de la ligne.
+			  updateLineContent(task.index, task.line + " (simple)");
+			} else {
+			  // Si la case est décochée, retirez "(simple)" de la ligne.
+			  updateLineContent(task.index, task.line.replace(/\s*\(\s*simple\s*\)\s*/g, ''));
+
+			}
+		  }
+		);
+
+		// Ajoutez la case à cocher à votre élément de tâche.
+		taskTextElement.appendChild(simpleCheckbox);
 
 		return taskElement;
 	}
@@ -1384,6 +1541,11 @@ function activateLightMode() {
 		const delayText = document.createElement("div");
 		delayText.style.display = "flex";
 
+
+		if (task.urgent) {
+			delayText.style.color = "red";
+			delayText.textContent = "Urgent->";
+		}
 		// Ajoute le timestamp du délai s'il existe, se transforme en deadline
 		if (task.delay) {
 			delayText.textContent = `[${formatTimestamp(parseInt(task.delay, 10))}]`;
@@ -1406,11 +1568,21 @@ function activateLightMode() {
 
 		const taskList = document.createElement('div');
 		taskList.classList.add("task-list");
-		tasks.forEach((task) => {
-			const taskElement = createTaskElement(task);
-			taskList.appendChild(taskElement);
-		});
-
+		
+		//if (tabId === 'inbox') {
+		//	if(tasks[0]) {
+		//		const taskElement = createTaskElement(tasks[0]);
+		//		taskList.appendChild(taskElement);
+		//	}
+			
+		//} else {
+			tasks.forEach((task) => {
+				const taskElement = createTaskElement(task);
+				taskList.appendChild(taskElement);
+				
+			});			
+		//}
+		
 		const tabTasks = document.getElementById(tabId + '-tasks');
 		tabTasks.innerHTML = '';
 		if (tabId === 'inbox') {
@@ -1472,7 +1644,7 @@ function activateLightMode() {
 
 			// Vérifier si la ligne commence déjà par "(ctime="
 			if (!currentLine.trim().startsWith("(ctime=")) {
-				// Insérer "(ctime=__timestamp__) " au début de la ligne
+				// Insérer au début de la ligne
 				const newTimestamp = `(ctime=${new Date().getTime()}) `;
 				const updatedLine = `${indent}${newTimestamp}${currentLine.trim()}`;
 
@@ -1550,6 +1722,7 @@ function activateLightMode() {
 			}
 			allTasks.push(taskWithTab);
 		});
+
 		allTasks.sort((a, b) => {
 			if (a.tab === b.tab) {
 				if ((a.tab === 'delay' || a.tab === 'await') && a.delay !== b.delay) {
@@ -1561,6 +1734,19 @@ function activateLightMode() {
 				return 0;
 			}
 		});
+		
+		allTasks.sort((a, b) => {
+			return b.atime - a.atime;
+		});
+
+		allTasks.sort((a, b) => {
+			return b.simple - a.simple;
+		});
+		
+		allTasks.sort((a, b) => {
+			return b.urgent - a.urgent;
+		});
+
 		['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
 			let columnTasks = allTasks.filter(task => task.tab === columnId);
 			let numberToLoad = Math.min(maxTasksPerColumn, columnTasks.length);
@@ -1715,6 +1901,15 @@ function activateLightMode() {
 		durationInput.placeholder = "Duration (in minutes)";
 		durationInput.addEventListener("click", handleDurationInputClick);
 		durationInput.addEventListener("change", handleInputChange); // Ajoute cet écouteur d'événements
+
+		
+	  // Lors de l'ouverture de la fenêtre contextuelle
+	  if (lastValidDate) {
+		dateInput.value = lastValidDate;
+	  }
+	  if (lastValidTime) {
+		durationInput.value = lastValidTime;
+	  }
 
 		const cancelButton = createButton('Cancel', 'red', closePopup)
 		cancelButton.classList.add("cancel-button");
@@ -2102,7 +2297,7 @@ function activateLightMode() {
 
 				const content = mainEditor.getValue();
 				generateTasks(content);
-				regenerateTasks();				
+				//regenerateTasks();				
 
 			  // Appliquez la classe "fade-out" pour déclencher la transition de fondu
 			  var splashContainer = document.querySelector(".splash-container");
@@ -2536,3 +2731,156 @@ function loadTheme() {
 
 loadTheme();
 });
+
+
+function updateLineContent(lineIndex, newContent) {
+  const lines = mainEditor.session.doc.getAllLines();
+  if (lineIndex >= 0 && lineIndex < lines.length) {
+    lines[lineIndex] = `${newContent}`;
+    mainEditor.session.doc.setValue(lines.join("\n"));
+  }
+}
+
+
+function loadFile(url, callback) {
+	PizZipUtils.getBinaryContent(url, callback);
+}
+
+function generateFileNameWithDate(title) {
+  if (!title) {
+    return null; // Si le titre est vide, retourne null
+  }
+
+  const maintenant = new Date();
+  const annee = maintenant.getFullYear();
+  const mois = (maintenant.getMonth() + 1).toString().padStart(2, '0');
+  const jour = maintenant.getDate().toString().padStart(2, '0');
+  const dateDuJour = `${annee}${mois}${jour}`;
+
+  const nomDuFichier = `${dateDuJour} - ${title}`;
+  return nomDuFichier;
+}
+
+function createDocxDocument(task) {
+  let title = prompt("Entrez un titre pour le document :"); // Demande le titre à l'utilisateur
+  title = generateFileNameWithDate(title)
+
+  loadFile("output.docx", function (error, content) {
+    if (error) {
+      throw error;
+    }
+    const zip = new PizZip(content);
+    const doc = new window.docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
+
+    function getDateDuJour() {
+      const maintenant = new Date();
+      const annee = maintenant.getFullYear();
+      const mois = (maintenant.getMonth() + 1).toString().padStart(2, '0');
+      const jour = maintenant.getDate().toString().padStart(2, '0');
+      const dateDuJour = `${annee}-${mois}-${jour}`;
+      return dateDuJour;
+    }
+
+    doc.render({
+      date: getDateDuJour(),
+      description: task.clean_context + " > " + task.clean_description,
+    });
+
+    const blob = doc.getZip().generate({
+      type: "blob",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      compression: "DEFLATE",
+    });
+
+    // Créez un objet URL pour le blob
+    const blobURL = window.URL.createObjectURL(blob);
+
+    // Créez un élément d'ancre pour le lien de téléchargement
+    const downloadLink = document.createElement("a");
+    downloadLink.href = blobURL;
+    downloadLink.download = `${title || "output"}.docx`; // Utilise le titre fourni ou "output" par défaut
+
+    // Ajoutez le titre au tableau task.links
+    if (title) {
+      task.links = task.links || [];
+      task.links.push({ title, url: "" });
+    }
+
+    // Cliquez sur le lien pour déclencher la boîte de dialogue de téléchargement du navigateur
+    downloadLink.click();
+	
+	addTaskToTop(popupEditor, mainEditor, task.clean_context + ' > ' + task.clean_description + '\n    File "' + title + '" +-'); 
+
+  });
+}
+
+
+function createExcelDocument(task) {
+  let title = prompt("Entrez un titre pour le document :"); // Demande le titre à l'utilisateur
+  title = generateFileNameWithDate(title)
+
+  loadFile("output.xlsx", function (error, content) {
+    if (error) {
+      throw error;
+    }
+    
+    const arrayBuffer = new Uint8Array(content);
+    const blob = new Blob([arrayBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    
+    // Créez un objet URL pour le blob
+    const blobURL = window.URL.createObjectURL(blob);
+
+    // Créez un élément d'ancre pour le lien de téléchargement
+    const downloadLink = document.createElement("a");
+    downloadLink.href = blobURL;
+    downloadLink.download = `${title || "output"}.xlsx`; // Utilise le titre fourni ou "output" par défaut
+
+    // Ajoutez le titre au tableau task.links
+    if (title) {
+      task.links = task.links || [];
+      task.links.push({ title, url: "" });
+    }
+
+    // Cliquez sur le lien pour déclencher la boîte de dialogue de téléchargement du navigateur
+    downloadLink.click();
+	
+	addTaskToTop(popupEditor, mainEditor, task.clean_context + ' > ' + task.clean_description + '\n    File "' + title + '" +-'); 
+  });
+}
+
+function createPptxDocument(task) {
+  let title = prompt("Entrez un titre pour la document :"); // Demande le titre à l'utilisateur
+  title = generateFileNameWithDate(title)
+  
+  // 1. Create a new Presentation
+  const pptx = new PptxGenJS();
+
+  // 2. Add a Slide
+  const slide = pptx.addSlide();
+
+  // 3. Add du contenu à la diapositive
+  slide.addText(task.clean_context + " > " + task.clean_description, {
+    x: 1.5,
+    y: 1.5,
+    color: "363636",
+    fill: { color: "F1F1F1" },
+    align: pptx.AlignH.center,
+  });
+
+  // 4. Save la présentation
+  pptx.writeFile({ fileName: title });
+
+  // Ajoutez le titre au tableau task.links
+  if (title) {
+    task.links = task.links || [];
+    task.links.push({ title, url: "" });
+  }
+
+  // Cliquez sur le lien pour déclencher la boîte de dialogue de téléchargement du navigateur
+  downloadLink.click();
+  
+  addTaskToTop(popupEditor, mainEditor, task.clean_context + ' > ' + task.clean_description + '\n    File "' + title + '" +-'); 
+}
