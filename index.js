@@ -1743,9 +1743,9 @@ function createCheckbox(labelText, backgroundColor, checked, onChangeCallback) {
 		//	return b.simple - a.simple;
 		//});
 		
-		//allTasks.sort((a, b) => {
-		//	return b.urgent - a.urgent;
-		//});
+		allTasks.sort((a, b) => {
+			return b.urgent - a.urgent;
+		});
 
 		['inbox', 'done', 'doc', 'await', 'delay', 'cancel'].forEach(columnId => {
 			let columnTasks = allTasks.filter(task => task.tab === columnId);
